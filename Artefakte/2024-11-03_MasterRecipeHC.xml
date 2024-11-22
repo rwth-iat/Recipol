@@ -28,7 +28,7 @@
 			<b2mml:Constraint>
 				<b2mml:ID>Liquiud constraint for the HCs</b2mml:ID>
 				<!-- A string containing a condition expression. The format for the string expression is not defined in the standard.-->
-				<b2mml:Condition>H2O</b2mml:Condition>
+				<b2mml:Condition>Material == H2O</b2mml:Condition>
 			</b2mml:Constraint>
 			<b2mml:Description>Only water is allowed to used for the stirring process</b2mml:Description>
 		</b2mml:EquipmentRequirement>
