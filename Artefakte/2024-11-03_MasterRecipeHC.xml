@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<b2mml:BatchInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mesa.org/xml/B2MML Schema/AllSchemas.xsd"
+	xmlns:b2mml="http://www.mesa.org/xml/B2MML">
+	<b2mml:ListHeader>
+		<b2mml:ID>ListHeadID</b2mml:ID>
+		<b2mml:CreateDate>2024-11-03T00:00:00+01:00</b2mml:CreateDate>
+	</b2mml:ListHeader>
+	<b2mml:Description>
+		This Batch Information includes the Master Recipe "MasterRecipeHC" to be executed on the modular plant at IAT using several stirring services
+	</b2mml:Description>
+
+
+	<b2mml:MasterRecipe>
+		<b2mml:ID>MasterRecipeHC</b2mml:ID>
+		<b2mml:Version>1.0.0</b2mml:Version>
+		<b2mml:VersionDate>2024-11-03T00:00:00+01:00</b2mml:VersionDate>
+		<b2mml:Description>Example of a master recipe for the modular plant Honeycomb with several stirring services</b2mml:Description>
+
+		<b2mml:Header>
+			<b2mml:ProductID>StirredWater1</b2mml:ProductID>
+			<b2mml:ProductName>Stirred Water</b2mml:ProductName>
+		</b2mml:Header>
+
+
+		<b2mml:EquipmentRequirement>
+			<b2mml:ID>Equipment Requirement for the HCs</b2mml:ID>
+			<b2mml:Constraint>
+				<b2mml:ID>Liquiud constraint for the HCs</b2mml:ID>
+				<!-- A string containing a condition expression. The format for the string expression is not defined in the standard.-->
+				<b2mml:Condition>H2O</b2mml:Condition>
+			</b2mml:Constraint>
+			<b2mml:Description>Only water is allowed to used for the stirring process</b2mml:Description>
+		</b2mml:EquipmentRequirement>
+
+		<b2mml:Formula>
+			<b2mml:Parameter>
+				<b2mml:ID>Stirring Time HC10</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>10</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>seconds</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+			<b2mml:Parameter>
+				<b2mml:ID>Stirring Time HC20</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>10</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>seconds</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+			<b2mml:Parameter>
+				<b2mml:ID>Stirring Time HC30</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>10</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>seconds</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:Formula>
+
+		<b2mml:ProcedureLogic>
+			<!--!!order	and sequence of the use of the processes-->
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>string</b2mml:FromIDValue>
+					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>string</b2mml:ToIDValue>
+					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Step>
+				<!--!!describes a single instance of use of a recipe element (unit operation, operation, or	phase)-->
+				<!--!!may also correspond to non procedural elements used in procedure diagrams...-->
+				<!--!!such as the Begin and End symbols, and the Allocation and Deallocation symbols.-->
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementID>normalizedString</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion>normalizedString</b2mml:RecipeElementVersion>
+				<b2mml:Description>Beginn of Procedure</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementID>normalizedString</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion>normalizedString</b2mml:RecipeElementVersion>
+				<b2mml:Description>Filling Educt 1</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementID>normalizedString</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion>normalizedString</b2mml:RecipeElementVersion>
+				<b2mml:Description>Filling Educt 2</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementID>normalizedString</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion>normalizedString</b2mml:RecipeElementVersion>
+				<b2mml:Description>Filling Educt 2</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementID>normalizedString</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion>normalizedString</b2mml:RecipeElementVersion>
+				<b2mml:Description>"End of Procedure"</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:Condition>normalizedString</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>
+		</b2mml:ProcedureLogic>
+
+		<b2mml:RecipeElement>
+			<!--!!Describes parameters of use for the ProcedureLogic-->
+			<!--!!Definition
+			of instance (parameter values)-->
+			<b2mml:ID>normalizedString</b2mml:ID>
+			<!--b2mml:Version>normalizedString</b2mml:Version-->
+			<!--b2mml:VersionDate>dateTime</b2mml:VersionDate-->
+			<b2mml:Description>string</b2mml:Description>
+			<b2mml:RecipeElementType>Procedure</b2mml:RecipeElementType>
+			<!--b2mml:BuildingBlockElementID>normalizedString</b2mml:BuildingBlockElementID-->
+			<!--b2mml:BuildingBlockElementVersion>normalizedString</b2mml:BuildingBlockElementVersion-->
+			<!--b2mml:ActualEquipmentID>InstanceEquipmentID
+			(Bspw. <HC10Instance> AssetID)</b2mml:ActualEquipmentID-->
+			<!--b2mml:Header></b2mml:Header-->
+			<!--b2mml:EquipmentRequirement>
+				<b2mml:ID>normalizedString</b2mml:ID>
+			</b2mml:EquipmentRequirement-->
+			<!--b2mml:Parameter>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:ParameterType>ProcessInput</b2mml:ParameterType>
+			</b2mml:Parameter-->
+			<!--b2mml:ProcedureLogic></b2mml:ProcedureLogic-->
+			<!--b2mml:RecipeElement>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementType>Procedure</b2mml:RecipeElementType>
+			</b2mml:RecipeElement-->
+			<!--b2mml:OtherInformation></b2mml:OtherInformation-->
+		</b2mml:RecipeElement>
+		<!--b2mml:OtherInformation></b2mml:OtherInformation-->
+	</b2mml:MasterRecipe>
+
+	<!--b2mml:ControlRecipe>
+		<b2mml:ID></b2mml:ID>
+	</b2mml:ControlRecipe-->
+
+	<b2mml:RecipeBuildingBlock>
+		<!--!!Recipe library elements -->
+		<!--!!Contains most of the parts of a recipe.-->
+		<!--!!The recipe element may describe any level of the procedural hierarchy.-->
+		<!--!!(unit procedure, operation, and phase)-->
+		<!--!!Describes the class (Definition of class)-->
+		<b2mml:RecipeElement>
+			<b2mml:ID>normalizedString</b2mml:ID>
+			<!--b2mml:Version>normalizedString</b2mml:Version-->
+			<!--b2mml:VersionDate>dateTime</b2mml:VersionDate-->
+			<b2mml:RecipeElementType>Procedure</b2mml:RecipeElementType>
+			<!--b2mml:BuildingBlockElementID>normalizedString</b2mml:BuildingBlockElementID-->
+			<!--b2mml:BuildingBlockElementVersion>normalizedString</b2mml:BuildingBlockElementVersion-->
+			<!--b2mml:ActualEquipmentID>ClassEquipmentID
+			(Bspw. HC10Class)</b2mml:ActualEquipmentID-->
+			<b2mml:ActualEquipmentID>"HC10ClassID"</b2mml:ActualEquipmentID>
+			<!--b2mml:Header></b2mml:Header-->
+			<!--b2mml:EquipmentRequirement>
+				<b2mml:ID>normalizedString</b2mml:ID>
+			</b2mml:EquipmentRequirement-->
+			<!--b2mml:Parameter>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:ParameterType>ProcessInput</b2mml:ParameterType>
+			</b2mml:Parameter-->
+			<!--b2mml:ProcedureLogic></b2mml:ProcedureLogic-->
+			<!--b2mml:RecipeElement>
+				<b2mml:ID>normalizedString</b2mml:ID>
+				<b2mml:RecipeElementType>Procedure</b2mml:RecipeElementType>
+			</b2mml:RecipeElement-->
+			<!--b2mml:OtherInformation></b2mml:OtherInformation-->
+		</b2mml:RecipeElement>
+	</b2mml:RecipeBuildingBlock>
+
+	<b2mml:EquipmentElement>
+		<b2mml:ID>HC10Class</b2mml:ID>
+		<b2mml:Description>HC10</b2mml:Description>
+		<b2mml:EquipmentElementType>Class</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementLevel>Unit</b2mml:EquipmentElementLevel>
+		<b2mml:Property>
+			<b2mml:ID>normalizedString</b2mml:ID>
+		</b2mml:Property>
+		<b2mml:EquipmentProceduralElementClass>
+			<b2mml:ID>IRDI-Mixing</b2mml:ID>
+			<b2mml:Description>Mixing</b2mml:Description>
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>ECLASS RPM</b2mml:ID>
+				<b2mml:Description>Rounds per Minute</b2mml:Description>
+				<b2mml:ParameterType>ProcessInput</b2mml:ParameterType>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElementClass>
+		<b2mml:EquipmentProceduralElementClass>
+			<b2mml:ID>IRDI-Draining</b2mml:ID>
+			<b2mml:Description>Draining</b2mml:Description>
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>ECLASS Flowrate</b2mml:ID>
+				<b2mml:Description>Flowrate</b2mml:Description>
+				<b2mml:ParameterType>ProcessInput</b2mml:ParameterType>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElementClass>
+		<b2mml:EquipmentElementID>normalizedString</b2mml:EquipmentElementID>
+	</b2mml:EquipmentElement>
+
+	<b2mml:EquipmentElement>
+		<b2mml:ID>HC10Instance</b2mml:ID>
+		<b2mml:EquipmentElementType>Element</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementLevel>EquipmentModule</b2mml:EquipmentElementLevel>
+		<!--b2mml:ClassInstanceAssociation>
+			<b2mml:ClassEquipmentID>HC10Class</b2mml:ClassEquipmentID>
+			<b2mml:MemberEquipmentID>HC10Instance</b2mml:MemberEquipmentID>
+		</b2mml:ClassInstanceAssociation-->
+		<b2mml:Property>
+			<b2mml:ID></b2mml:ID>
+			<b2mml:Value>
+				<b2mml:ValueString>String</b2mml:ValueString>
+                <b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+                <b2mml:DataType>Quantity</b2mml:DataType>
+                <b2mml:UnitOfMeasure></b2mml:UnitOfMeasure>
+			</b2mml:Value>
+		</b2mml:Property>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>www.example.org/...#MixingOfLiquids</b2mml:ID>
+			<b2mml:Description></b2mml:Description>
+			<b2mml:EquipmentProceduralElementType>Operation</b2mml:EquipmentProceduralElementType>
+		</b2mml:EquipmentProceduralElement>
+	</b2mml:EquipmentElement>
+
+	<b2mml:EquipmentElement>
+		<b2mml:ID></b2mml:ID>
+		<b2mml:EquipmentElementType>Element</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementLevel>ProcessCell</b2mml:EquipmentElementLevel>
+		<b2mml:EquipmentConnection>
+			<b2mml:ID>EquipmentConnectionHC30toHC10</b2mml:ID>
+			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
+			<b2mml:FromEquipmentID>HC30Instance</b2mml:FromEquipmentID>
+			<b2mml:ToEquipmentID>HC10Instance</b2mml:ToEquipmentID>
+		</b2mml:EquipmentConnection>
+		<b2mml:EquipmentConnection>
+			<b2mml:ID>EquipmentConnectionHC10toHC20</b2mml:ID>
+			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
+			<b2mml:FromEquipmentID>HC10Instance</b2mml:FromEquipmentID>
+			<b2mml:ToEquipmentID>HC20Instance</b2mml:ToEquipmentID>
+		</b2mml:EquipmentConnection>
+	</b2mml:EquipmentElement>
+
+
+	<!--b2mml:BatchList>
+		<b2mml:BatchListEntry>
+			<b2mml:ID>normalizedString</b2mml:ID>
+			<b2mml:BatchListEntryType>Campaign</b2mml:BatchListEntryType>
+		</b2mml:BatchListEntry>
+	</b2mml:BatchList-->
+	<!--b2mml:EnumerationSet></b2mml:EnumerationSet-->
+</b2mml:BatchInformation>
