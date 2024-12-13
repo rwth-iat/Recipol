@@ -71,7 +71,11 @@ class Procedure:
     pass
 
 class Resource:
-    pass
+    def __init__(self, id:str):
+        self.id = id # the id of the resource
+
+    def __str__(self):
+        return self.id
 
 class Element:
     def __init__(self, etype:str, id:str):
@@ -139,12 +143,29 @@ class Element:
         """Sets the type of the element"""
         self.etype = etype
 
+    def isInit(self):
+        """Sets the element as initial element"""
+        self.init = True
+
+    def addResource(self, res:Resource):
+        """Adds a resource to the element"""
+        self.res = res
+
+    def addRequirement(self, req:Requirement):
+        """Adds a requirement to the element's requirements"""
+        self.reqs.append(req)
+
+    def addParameter(self, param:Parameter):
+        """Adds a parameter to the element's parameters"""
+        self.params.append(param)
+
 
 class Bml:
-    def __init__(self, reqs:list[Requirement] = [], params:list[Parameter] = [], elems:list[Element] = []):
-        self.reqs = reqs # list of requirements of the b2mml file
-        self.params = params # list of parameters of the b2mml file
-        self.elems = elems # list of elements of the b2mml file
+    def __init__(self):
+        self.reqs = [] # list of requirements of the b2mml file
+        self.params = [] # list of parameters of the b2mml file
+        self.elems = [] # list of elements of the b2mml file
+        self.res = [] # list of resources of the b2mml file
 
     def __str__(self):
         descr = "Requirements:\n"
@@ -185,6 +206,34 @@ class Bml:
     def addElement(self, elem:Element):
         """Adds an element to the bml's list of elements"""
         self.elems.append(elem)
+
+    def getResource(self, rID:str) -> Resource | None:
+        """Returns the resource if it exists, otherwise None."""
+        for r in self.res:
+            if r.id == rID:
+                return r
+            
+        return None
+    
+    def addResource(self, res:Resource):
+        """Adds a resource to the bml's list of resources"""
+        self.res.append(res)
+
+    def getRequirement(self, reqId) -> Requirement | None:
+        """Returns the requirement if it exists, otherwise None."""
+        for r in self.reqs:
+            if r.id == reqId:
+                return r
+            
+        return None
+    
+    def getParameter(self, paramId) -> Parameter | None:
+        """Returns the parameter if it exists, otherwise None."""
+        for p in self.params:
+            if p.id == paramId:
+                return p
+            
+        return None
 
 ### functions
 def parseMasterRecipe(node):
@@ -272,6 +321,60 @@ def parseMasterRecipe(node):
                     
                     # add condition
                     transElem.addCond(gchild.findtext(f"{NAMESPACE}Condition"))
+
+        elif child.tag == f"{NAMESPACE}RecipeElement":
+            # get the element
+            thisElem = bml.getElement(child.findtext(f"{NAMESPACE}ID"))
+            if child.findtext(f"{NAMESPACE}RecipeElementType") == "Begin":
+                # set as initial element
+                thisElem.isInit()
+            else:
+                for gchild in child:
+                    if gchild.tag == f"{NAMESPACE}ActualEquipmentID":
+                        resId = gchild.text
+
+                        res = bml.getResource(resId)
+
+                        if res is None:
+                            # resource doesn't exist yet, create new one
+                            res = Resource(resId)
+                            bml.addResource(res)
+
+                        # add the resource to the element
+                        thisElem.addResource(res)
+                    elif gchild.tag == f"{NAMESPACE}EquipmentRequirement":
+                        reqId = gchild.findtext(f"{NAMESPACE}ID")
+                        req = bml.getRequirement(reqId)
+
+                        if req is None:
+                            # requirement doesn't exist yet, create new one
+                            req = Requirement()
+
+                            # fetch information about requirement
+                            req.nameRequirement(reqId)
+                            req.addConstraint(gchild.find(f"{NAMESPACE}Constraint").findtext(f"{NAMESPACE}Condition"))
+
+                            # add requirement to bml's requirements
+                            bml.addRequirement(req)
+                        
+                        # add the requirement to the element
+                        thisElem.addRequirement(req)
+                    elif gchild.tag == f"{NAMESPACE}Parameter":
+                        paramId = gchild.findtext(f"{NAMESPACE}ID")
+                        param = bml.getParameter(paramId)
+
+                        if param is None:
+                            # parameter doesn't exist qet, create new one
+                            param = Parameter(id=paramId)
+                            param.addDataType(gchild.find(f"{NAMESPACE}Value".findtext(f"{NAMESPACE}DataType")))
+                            param.addUnit(gchild.find(f"{NAMESPACE}Value".findtext(f"{NAMESPACE}UnitOfMeasure")))
+                            param.addValue(gchild.find(f"{NAMESPACE}Value".findtext(f"{NAMESPACE}ValueString")))
+
+                            # add param to bml
+                            bml.addParameter(param)
+
+                        # add param to element
+                        thisElem.addParameter(param)
 
 ### start main
 
