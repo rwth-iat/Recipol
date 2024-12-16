@@ -68,14 +68,30 @@ class Parameter:
         self.unit = unit
 
 class Procedure:
-    pass
+    def __init__(self, id:str):
+        self.id = id # the id of the procedure
+        self.params = [] # the list of parameters of the procedure
+
+    def __str__(self):
+        return self.id
+
+    def addParameter(self, param:Parameter):
+        """Adds a parameter to the procedure"""
+
+        self.params.append(param)
 
 class Resource:
     def __init__(self, id:str):
         self.id = id # the id of the resource
+        self.procs = [] # the procedures of the resource
 
     def __str__(self):
-        return self.id
+        return f"ID: {self.id}, Procedures: {','.join(p.id for p in self.procs)}"
+    
+    def addProcedure(self, proc:Procedure):
+        """Adds a procedure to the resource"""
+
+        self.procs.append(proc)
 
 class Element:
     def __init__(self, etype:str, id:str):
@@ -159,6 +175,10 @@ class Element:
         """Adds a parameter to the element's parameters"""
         self.params.append(param)
 
+    def addProcedure(self, proc:Procedure):
+        """Adds a procedure to the element's procedures"""
+        self.acts.append(proc)
+
 
 class Bml:
     def __init__(self):
@@ -177,6 +197,11 @@ class Bml:
 
         for param in self.params:
             descr += f"{str(param)}\n"
+
+        descr += "\nResources:\n"
+
+        for res in self.res:
+            descr += f"{str(res)}\n"
 
         descr += "\n"
 
@@ -376,6 +401,49 @@ def parseMasterRecipe(node):
                         # add param to element
                         thisElem.addParameter(param)
 
+def parseResource(node):
+    if node.findtext(f"{NAMESPACE}EquipmentElementType") == "Instance":
+        # get the instance
+        resId = node.findtext(f"{NAMESPACE}ID")
+        thisRes = bml.getResource(resId)
+
+        if thisRes is None:
+            # create new resource
+            thisRes = Resource(id=resId)
+
+        for child in node:
+            if child.tag == f"{NAMESPACE}EquipmentProceduralElement":
+                # create procedures
+                procId = child.findtext(f"{NAMESPACE}ID")
+                thisProc = Procedure(id=procId)
+
+                for gchild in child:
+                    if gchild.tag == f"{NAMESPACE}Parameter":
+                        # parse parameter
+                        paramId = gchild.findtext(f"{NAMESPACE}ID")
+
+                        # see if param exists
+                        thisParam = bml.getParameter(paramId)
+
+                        if thisParam is None:
+                            # create new Parameter
+                            thisParam = Parameter(id=paramId)
+                            thisParam.addDataType(gchild.findtext(f"{NAMESPACE}DataType"))
+                            thisParam.addUnit(gchild.findtext(f"{NAMESPACE}UnitOfMeasure"))
+                            thisParam.addValue(gchild.findtext(f"{NAMESPACE}ValueString"))
+
+                        # add parameter to procedure
+                        thisProc.addParameter(thisParam)
+
+                # add procedure to resource
+                thisRes.addProcedure(thisProc)
+
+                # see if procedure is also called in step
+                procStep = bml.getElement(eID=procId)
+
+                if procStep is not None:
+                    procStep.addProcedure(thisProc)
+
 ### start main
 
 # parse b2mml file
@@ -390,5 +458,8 @@ for child in root:
     if child.tag == f"{NAMESPACE}MasterRecipe":
         # parse MasterRecipe
         parseMasterRecipe(node=child)
+    elif child.tag == f"{NAMESPACE}EquipmentElement":
+        # parse Resources
+        parseResource(node=child)
 
 print(bml)

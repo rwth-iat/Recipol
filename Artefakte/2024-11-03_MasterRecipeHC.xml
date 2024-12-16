@@ -385,7 +385,7 @@
 			</b2mml:Value>
 		</b2mml:Property>
 		<b2mml:EquipmentProceduralElement>
-			<b2mml:ID>Stirring:Continuous_Stirring</b2mml:ID>
+			<b2mml:ID>HC10:Stirring:Continuous_Stirring</b2mml:ID>
 			<b2mml:Description></b2mml:Description>
 			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
 		</b2mml:EquipmentProceduralElement>
