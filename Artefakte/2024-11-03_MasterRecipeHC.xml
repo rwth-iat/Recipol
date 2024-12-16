@@ -337,37 +337,6 @@
 	</b2mml:ControlRecipe-->
 
 	<b2mml:EquipmentElement>
-		<b2mml:ID>HC10Class</b2mml:ID>
-		<b2mml:Description>HC10</b2mml:Description>
-		<b2mml:EquipmentElementType>Class</b2mml:EquipmentElementType>
-		<b2mml:EquipmentElementLevel>Unit</b2mml:EquipmentElementLevel>
-		<b2mml:Property>
-			<b2mml:ID>normalizedString</b2mml:ID>
-		</b2mml:Property>
-		<b2mml:EquipmentProceduralElementClass>
-			<b2mml:ID>IRDI-Mixing</b2mml:ID>
-			<b2mml:Description>Mixing</b2mml:Description>
-			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
-			<b2mml:Parameter>
-				<b2mml:ID>ECLASS RPM</b2mml:ID>
-				<b2mml:Description>Rounds per Minute</b2mml:Description>
-				<b2mml:ParameterType>ProcessInput</b2mml:ParameterType>
-			</b2mml:Parameter>
-		</b2mml:EquipmentProceduralElementClass>
-		<b2mml:EquipmentProceduralElementClass>
-			<b2mml:ID>IRDI-Draining</b2mml:ID>
-			<b2mml:Description>Draining</b2mml:Description>
-			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
-			<b2mml:Parameter>
-				<b2mml:ID>ECLASS Flowrate</b2mml:ID>
-				<b2mml:Description>Flowrate</b2mml:Description>
-				<b2mml:ParameterType>ProcessInput</b2mml:ParameterType>
-			</b2mml:Parameter>
-		</b2mml:EquipmentProceduralElementClass>
-		<b2mml:EquipmentElementID>normalizedString</b2mml:EquipmentElementID>
-	</b2mml:EquipmentElement>
-
-	<b2mml:EquipmentElement>
 		<b2mml:ID>HC10Instance</b2mml:ID>
 		<b2mml:EquipmentElementType>Instance</b2mml:EquipmentElementType>
 		<b2mml:EquipmentElementLevel>EquipmentModule</b2mml:EquipmentElementLevel>
