@@ -179,7 +179,6 @@ class Element:
         """Adds a procedure to the element's procedures"""
         self.acts.append(proc)
 
-
 class Bml:
     def __init__(self):
         self.reqs = [] # list of requirements of the b2mml file
