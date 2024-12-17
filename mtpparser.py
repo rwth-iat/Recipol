@@ -34,10 +34,22 @@ class Procedure:
     def __init__(self, name:str, id:str):
         self.name = name # name of the procedure
         self.id = id # id of the procedure
+        self.params = [] # list of parameters of the procedure
+        self.compl = None # flag that says if procedure is self completing or not
 
     def __str__(self):
         descr = f"NAME: {self.name}, ID: {self.id}"
+        descr += f"\n   Parameter: {self.params}"
+        descr += f"\n   Self Completing: {self.compl}"
         return descr
+    
+    def addParameter(self, param:Instance) -> None:
+        """Adds a parameter to the procedure"""
+        self.params.append(param)
+
+    def setSelfCompleting(self, complFlag:bool) -> None:
+        """Sets the self completing flag of the procedure"""
+        self.compl = complFlag
 
 class Mtp:
     def __init__(self):
@@ -61,6 +73,22 @@ class Mtp:
     def addInstance(self, inst:Instance) -> None:
         """Adds an instance to the mtp"""
         self.insts.append(inst)
+
+    def hasInstance(self, instId:str) -> bool:
+        """Returns true if an instance with the given id exists, otherwise false"""
+        for i in self.insts:
+            if i.id == instId:
+                return True
+            
+        return False
+    
+    def getInstance(self, instId:str) -> Instance | None:
+        """Returns the instance with the given id"""
+        for i in self.insts:
+            if i.id == instId:
+                return i
+            
+        return None
 
     def addProcedure(self, proc:Procedure) -> None:
         """Adds a procedure to the mtp."""
@@ -197,6 +225,7 @@ for child in root:
 
                             # add instance to mtp
                             mtp.addInstance(inst)
+
     elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
         for gchild in child:
             if gchild.tag == f"{NAMESPACE}InternalElement":
@@ -209,10 +238,24 @@ for child in root:
                     if ggchild.tag == f"{NAMESPACE}InternalElement":
                         procName = ggchild.get("Name") # name of the procedure
                         procId = ggchild.get("ID") # id of the procedure
+                        proc = Procedure(name=procName, id=procId)
                         procCount += 1
 
                         # add the procedure to the mtp's procedures
-                        mtp.addProcedure(Procedure(name=procName, id=procId))
+                        mtp.addProcedure(proc)
+
+                        for paramNode in ggchild:
+                            if paramNode.tag == f"{NAMESPACE}InternalElement":
+                                for refNode in paramNode.iter(f"{NAMESPACE}Attribute"):
+                                    if refNode.get("Name") == "RefID" and mtp.hasInstance(refNode.findtext(f"{NAMESPACE}Value")):
+                                        # get the instance the procedure refers to 
+                                        procParam = mtp.getInstance(refNode.findtext(f"{NAMESPACE}Value"))
+
+                                        # add the instance to the procedure's params
+                                        proc.addParameter(procParam)
+                            elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "IsSelfCompleting":
+                                proc.setSelfCompleting(paramNode.findtext(f"{NAMESPACE}Value"))
+
 
                 if procCount == 0:
                     # no procedures, add the service instead
