@@ -30,15 +30,28 @@ class Instance:
         """Adds a unit"""
         self.unit = unit
 
+class Procedure:
+    def __init__(self, name:str, id:str):
+        self.name = name # name of the procedure
+        self.id = id # id of the procedure
+
+    def __str__(self):
+        descr = f"NAME: {self.name}, ID: {self.id}"
+        return descr
+
 class Mtp:
     def __init__(self):
         self.name = "" # name of the mtp 
         self.insts = [] # list of instances
+        self.procs = [] # list of procedures
 
     def __str__(self):
         descr = f"{self.name}\nInstances:"
         for i in self.insts:
             descr += f"\n    {i}"
+        descr += f"\nProcedures:"
+        for p in self.procs:
+            descr += f"\n   {p}"
         return descr
 
     def nameMtp(self, name:str) -> None:
@@ -48,6 +61,10 @@ class Mtp:
     def addInstance(self, inst:Instance) -> None:
         """Adds an instance to the mtp"""
         self.insts.append(inst)
+
+    def addProcedure(self, proc:Procedure) -> None:
+        """Adds a procedure to the mtp."""
+        self.procs.append(proc)
 
 ### functions
 def getUnit(unitNr: int) -> str:
@@ -180,5 +197,25 @@ for child in root:
 
                             # add instance to mtp
                             mtp.addInstance(inst)
+    elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
+        for gchild in child:
+            if gchild.tag == f"{NAMESPACE}InternalElement":
+                servName = gchild.get("Name") # name of the service
+                servId = gchild.get("ID") # id of the service
+                procCount = 0 # number of procedures under service
+
+                # get procedures
+                for ggchild in gchild:
+                    if ggchild.tag == f"{NAMESPACE}InternalElement":
+                        procName = ggchild.get("Name") # name of the procedure
+                        procId = ggchild.get("ID") # id of the procedure
+                        procCount += 1
+
+                        # add the procedure to the mtp's procedures
+                        mtp.addProcedure(Procedure(name=procName, id=procId))
+
+                if procCount == 0:
+                    # no procedures, add the service instead
+                    mtp.addProcedure(Procedure(name=servName, id=servId))
 
 print(mtp)
