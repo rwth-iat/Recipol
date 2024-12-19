@@ -83,15 +83,15 @@ class Procedure:
 class Resource:
     def __init__(self, id:str):
         self.id = id # the id of the resource
-        self.procs = [] # the procedures of the resource
+        self.skills = [] # the procedures of the resource
 
     def __str__(self):
-        return f"ID: {self.id}, Procedures: {','.join(p.id for p in self.procs)}"
+        return f"ID: {self.id}, Procedures: {','.join(s.id for s in self.skills)}"
     
     def addProcedure(self, proc:Procedure):
         """Adds a procedure to the resource"""
 
-        self.procs.append(proc)
+        self.skills.append(proc)
 
 class Element:
     def __init__(self, etype:str, id:str):
