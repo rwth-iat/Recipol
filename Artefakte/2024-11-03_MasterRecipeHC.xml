@@ -344,15 +344,106 @@
 			<b2mml:ClassEquipmentID>HC10Class</b2mml:ClassEquipmentID>
 			<b2mml:MemberEquipmentID>HC10Instance</b2mml:MemberEquipmentID>
 		</b2mml:ClassInstanceAssociation-->
-		<b2mml:Property>
-			<b2mml:ID></b2mml:ID>
-			<b2mml:Value>
-				<b2mml:ValueString>String</b2mml:ValueString>
-                <b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
-                <b2mml:DataType>Quantity</b2mml:DataType>
-                <b2mml:UnitOfMeasure></b2mml:UnitOfMeasure>
-			</b2mml:Value>
-		</b2mml:Property>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>5d6dfd19-2433-4f2f-88fc-2133b0267bf7</b2mml:ID>
+			<b2mml:Description>HC10:Heating:Duration_Heating</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>daedd555-3ed2-4029-b088-f97c31d88813</b2mml:ID>
+				<b2mml:Description>Duration_Heating_Param</b2mml:Description>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>30</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>e62ebb7b-db85-4e7e-8f17-3fcad3a8f695</b2mml:ID>
+			<b2mml:Description>HC10:Heating:Temperatur_Heating</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>f3692783-e12c-4356-96bc-078500986027</b2mml:ID>
+				<b2mml:Description>Temperatur_Heating_Param</b2mml:Description>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>20</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>temperature</b2mml:DataType>
+					<b2mml:UnitOfMeasure>degree Celsius</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>33706a6d-9198-47c4-b0e9-617111dfc76e</b2mml:ID>
+			<b2mml:Description>HC10:Transport:Duration_Transport</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>f0907c42-05b4-46dd-8a84-e5de82e861c8</b2mml:ID>
+				<b2mml:Description>Duration_Transport_Param</b2mml:Description>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>30</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>c19d5a9b-8d69-4d52-b3d4-e19bee6a2c4f</b2mml:ID>
+			<b2mml:Description>HC10:Transport:Complete_Transport</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>8489e2ed-2454-4d3c-a0e1-7b9bf0000f94</b2mml:ID>
+			<b2mml:Description>HC10:Emptying:Duration_Emptying</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>15d6eadc-b197-4560-a22b-3742c9f254ca</b2mml:ID>
+				<b2mml:Description>Duration_Emptying_Param</b2mml:Description>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>30</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>5e16fee8-4984-4a06-ad57-86835ab67748</b2mml:ID>
+			<b2mml:Description>HC10:Emptying:Complete_Emptying</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>caf439dc-90fe-41d4-96c2-0f28de6d0df6</b2mml:ID>
+			<b2mml:Description>HC10:Circulate:Duration_Circulation</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>8b706a51-8e13-4d43-85e3-01e56060e85a</b2mml:ID>
+				<b2mml:Description>Duration_Circulation_Param</b2mml:Description>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>30</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>991dfdeb-1b96-4905-ad1a-c3faf24ae988</b2mml:ID>
+			<b2mml:Description>HC10:Circulate:Continous_Circulation</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+		</b2mml:EquipmentProceduralElement>
 		<b2mml:EquipmentProceduralElement>
 			<b2mml:ID>948d5e71-76b1-4093-b11c-6d29a70e0e84</b2mml:ID>
 			<b2mml:Description>HC10:Stirring:Continuous_Stirring</b2mml:Description>			
@@ -375,6 +466,12 @@
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentConnection>
+			<b2mml:ID>EquipmentConnectionHC10toHC20</b2mml:ID>
+			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
+			<b2mml:FromEquipmentID>HC10Instance</b2mml:FromEquipmentID>
+			<b2mml:ToEquipmentID>HC20Instance</b2mml:ToEquipmentID>
+		</b2mml:EquipmentConnection>
 	</b2mml:EquipmentElement>
 
 	<b2mml:EquipmentElement>
@@ -386,12 +483,6 @@
 			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
 			<b2mml:FromEquipmentID>HC30Instance</b2mml:FromEquipmentID>
 			<b2mml:ToEquipmentID>HC10Instance</b2mml:ToEquipmentID>
-		</b2mml:EquipmentConnection>
-		<b2mml:EquipmentConnection>
-			<b2mml:ID>EquipmentConnectionHC10toHC20</b2mml:ID>
-			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
-			<b2mml:FromEquipmentID>HC10Instance</b2mml:FromEquipmentID>
-			<b2mml:ToEquipmentID>HC20Instance</b2mml:ToEquipmentID>
 		</b2mml:EquipmentConnection>
 	</b2mml:EquipmentElement>
 

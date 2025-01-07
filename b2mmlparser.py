@@ -135,13 +135,25 @@ class Element:
 
         return descr
 
+    def getId(self) -> str:
+        """Returns the id of the element"""
+        return self.id
+
     def addPred(self, pred:Element):
         """Adds a predecessor to the list of preds"""
         self.preds.append(pred)
 
+    def getPred(self) -> Element | list[Element]:
+        """Returns the preceding element(s)"""
+        return self.preds
+
     def addPost(self, post:Element):
         """Adds a sucessor to the list of posts"""
         self.posts.append(post)
+
+    def getPost(self) -> Element | list[Element]:
+        """Returns the following element(s)"""
+        return self.posts
 
     def changeId(self, id:str):
         """Replaces the element ID (Step/Transition) with the RecipeElementID"""
@@ -159,9 +171,13 @@ class Element:
         """Sets the type of the element"""
         self.etype = etype
 
-    def isInit(self):
+    def setInit(self):
         """Sets the element as initial element"""
         self.init = True
+
+    def isInit(self) -> bool:
+        """Returns the value of the init"""
+        return self.init
 
     def addResource(self, res:Resource):
         """Adds a resource to the element"""
@@ -181,10 +197,10 @@ class Element:
 
 class Bml:
     def __init__(self):
-        self.reqs = [] # list of requirements of the b2mml file
-        self.params = [] # list of parameters of the b2mml file
-        self.elems = [] # list of elements of the b2mml file
-        self.res = [] # list of resources of the b2mml file
+        self.reqs:list[Requirement] = [] # list of requirements of the b2mml file
+        self.params:list[Parameter] = [] # list of parameters of the b2mml file
+        self.elems:list[Element] = [] # list of elements of the b2mml file
+        self.res:list[Resource] = [] # list of resources of the b2mml file
 
     def __str__(self):
         descr = "Requirements:\n"
@@ -230,6 +246,14 @@ class Bml:
     def addElement(self, elem:Element):
         """Adds an element to the bml's list of elements"""
         self.elems.append(elem)
+
+    def getInitialElement(self) -> Element:
+        """Returns the initial element"""
+        for e in self.elems:
+            if e.isInit():
+                return e
+            
+        raise RuntimeError("No initial step has been declared.")
 
     def getResource(self, rID:str) -> Resource | None:
         """Returns the resource if it exists, otherwise None."""
@@ -351,7 +375,7 @@ def parseMasterRecipe(node):
             thisElem = bml.getElement(child.findtext(f"{NAMESPACE}ID"))
             if child.findtext(f"{NAMESPACE}RecipeElementType") == "Begin":
                 # set as initial element
-                thisElem.isInit()
+                thisElem.setInit()
             else:
                 for gchild in child:
                     if gchild.tag == f"{NAMESPACE}ActualEquipmentID":
@@ -443,6 +467,98 @@ def parseResource(node):
                 if procStep is not None:
                     procStep.addProcedure(thisProc)
 
+def sortElements():
+    # get initial element
+    initElem = bml.getInitialElement()
+    # list of sorted elements
+    sortedElems = []
+    # helper list during sorting
+    helpSort:list[Element] = []
+
+    # add initial element to both lists
+    sortedElems.append([initElem])
+    helpSort.append(initElem)
+
+    # while there are still unseen elements sort
+    while len(helpSort) > 0:
+        curr = helpSort[0]
+        # differentiate between single objects and nested lists
+        if type(curr) is not list:
+            # initial is handled differently
+            if curr != initElem:
+                # check if all of curr's predecessors are already in the list
+                preds = curr.getPred()
+                isNext = True
+                for p in preds:
+                    if not any(p in sl for sl in sortedElems):
+                        isNext = False
+                        break
+                if isNext:
+                    # all predecessors are already in list, add following elements to sorted and help lists unless post is empty
+                    posts = curr.getPost()
+                    if len(posts) > 0:
+                        sortedElems.append(curr.posts)
+                        helpSort.extend(curr.posts)
+
+                    # remove the current element from helpSort
+                    helpSort.remove(curr)
+                else:
+                    # check if there are still other elements in the list
+                    if len(helpSort) > 1:
+                        # switch current element with next
+                        helpSort[1], helpSort[0] = helpSort[0], helpSort[1]
+                    else:
+                        # error case with unreachable predecessor
+                        raise RuntimeError(f"Cannot find predecessing element of {curr.getId()}")
+
+            else:
+                # add the initial element's following elements to sorted and help lists unless initial doesn't have following elements
+                posts = curr.getPost()
+                if len(posts) > 0:
+                    sortedElems.append(curr.getPost())
+                    helpSort.extend(curr.getPost())
+
+                # remove the current element from helpSort
+                helpSort.remove(curr)
+        else: 
+            # do the same but for nested elements
+            for c in curr:
+                # check if all of c's predecessors are already in the list
+                preds = c.getPred()
+                isNext = True
+                for p in preds:
+                    if not any(p in sl for sl in sortedElems):
+                        isNext = False
+                        break
+                if isNext:
+                    # all predecessors are already in list, add following elements to sorted and help lists unless posts is empty
+                    posts = c.getPost()
+                    if len(posts) > 0:
+                        sortedElems.append(c.getPost())
+                        helpSort.extend(c.getPost())
+                        
+                    # remove the current element from helpSort
+                    helpSort.remove(c)
+                else:
+                    # check if there are still other elements in the list
+                    if len(helpSort) > 1:
+                        # switch current element with next
+                        helpSort[1], helpSort[0] = helpSort[0], helpSort[1]
+                    else:
+                        # error case with unreachable predecessor
+                        raise RuntimeError(f"Cannot find predecessing element of {c.getId()}")
+                    
+    # sortedList is a list of lists
+    # we want single elements to simply be part of the list but if there is parallel execution (= sublist with multiple elements) it shall stay sublist
+    orderedList = []
+    for e in sortedElems:
+        if len(e) == 1:
+            orderedList.extend(e)
+        else:
+            orderedList.append(e)
+                    
+    return orderedList
+
 ### start main
 
 # parse b2mml file
@@ -461,4 +577,12 @@ for child in root:
         # parse Resources
         parseResource(node=child)
 
-print(bml)
+# create list
+sortedList = sortElements()
+
+for s in sortedList:
+    if type(s) is list:
+        for ss in s:
+            print(ss.getId())
+    else:
+        print(s.getId())
