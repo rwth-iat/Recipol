@@ -30,6 +30,10 @@ class Instance:
         """Adds a unit"""
         self.unit = unit
 
+    def getName(self) -> str:
+        """Returns the name of the instance"""
+        return self.name
+
 class Procedure:
     def __init__(self, name:str, id:str):
         self.name = name # name of the procedure
@@ -260,5 +264,3 @@ for child in root:
                 if procCount == 0:
                     # no procedures, add the service instead
                     mtp.addProcedure(Procedure(name=servName, id=servId))
-
-print(mtp)

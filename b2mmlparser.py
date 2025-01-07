@@ -536,7 +536,7 @@ def sortElements():
                     if len(posts) > 0:
                         sortedElems.append(c.getPost())
                         helpSort.extend(c.getPost())
-                        
+
                     # remove the current element from helpSort
                     helpSort.remove(c)
                 else:
@@ -579,10 +579,3 @@ for child in root:
 
 # create list
 sortedList = sortElements()
-
-for s in sortedList:
-    if type(s) is list:
-        for ss in s:
-            print(ss.getId())
-    else:
-        print(s.getId())
