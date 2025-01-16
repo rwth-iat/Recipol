@@ -238,7 +238,7 @@
 			</b2mml:Step>
 			<b2mml:Step>
 				<b2mml:ID>S4</b2mml:ID>
-				<b2mml:RecipeElementID>HC30:Stirring:Continuous_Stirring</b2mml:RecipeElementID>
+				<b2mml:RecipeElementID>39a8c488-23b4-46e9-b3af-57a2ac413b16</b2mml:RecipeElementID>
 				<b2mml:RecipeElementVersion />
 				<b2mml:Description>Stirring Educt 3</b2mml:Description>
 			</b2mml:Step>
@@ -317,7 +317,7 @@
 		</b2mml:RecipeElement>
 		<b2mml:RecipeElement>
 			<!--!!ID must be unique and reference the procedure of the HC-->
-			<b2mml:ID>HC30:Stirring:Continuous_Stirring</b2mml:ID>
+			<b2mml:ID>39a8c488-23b4-46e9-b3af-57a2ac413b16</b2mml:ID>
 			<b2mml:Description>Continuous Stirring Procedure</b2mml:Description>
 			<b2mml:RecipeElementType>Operation</b2mml:RecipeElementType>
 			<b2mml:ActualEquipmentID>HC30Instance</b2mml:ActualEquipmentID>

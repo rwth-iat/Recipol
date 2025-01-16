@@ -579,3 +579,5 @@ for child in root:
 
 # create list
 sortedList = sortElements()
+
+#print(bml)

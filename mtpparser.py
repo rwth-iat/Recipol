@@ -1,14 +1,16 @@
 from defusedxml.ElementTree import parse
 
 ### static variables
-TESTMTP = r"Artefakte\manifest.aml"
+#TESTMTP = r"Artefakte\HC10_manifest.aml"
+TESTMTP = r"Artefakte\HC30_manifest.aml"
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
 class Instance:
     def __init__(self, name, id):
         self.name = name # name of the instance
-        self.id = id # refID of the instance
+        self.id = id # ID of the instance
+        self.refid = None # refID of the instance
         self.min = None # minimal value of the instance
         self.max = None # maximal value of the instance
         self.unit = None # unit of the instance
@@ -18,11 +20,15 @@ class Instance:
         descr += f"\n    Min: {self.min}, Max: {self.max}, Unit: {self.unit}"
         return descr
     
-    def addMin(self, minVal:int):
+    def addRefId(self, refId: str):
+        """Adds a refID to the instance"""
+        self.refid = refId
+    
+    def addMin(self, minVal:float):
         """Adds a low limit value"""
         self.min = minVal
 
-    def addMax(self, maxVal:int):
+    def addMax(self, maxVal:float):
         """Adds a high limit value"""
         self.max = maxVal
 
@@ -81,7 +87,7 @@ class Mtp:
     def hasInstance(self, instId:str) -> bool:
         """Returns true if an instance with the given id exists, otherwise false"""
         for i in self.insts:
-            if i.id == instId:
+            if i.id == instId or i.refid == instId:
                 return True
             
         return False
@@ -89,7 +95,7 @@ class Mtp:
     def getInstance(self, instId:str) -> Instance | None:
         """Returns the instance with the given id"""
         for i in self.insts:
-            if i.id == instId:
+            if i.id == instId or i.refid == instId:
                 return i
             
         return None
@@ -209,20 +215,22 @@ for child in root:
         mtp.nameMtp(name=child.find(f"{NAMESPACE}InternalElement").get("Name"))
 
         for gchild in child.iter(f"{NAMESPACE}InternalElement"):
-            if gchild.get("Name") == "CommunicationSet":
+            if gchild.get("Name") == "CommunicationSet" or gchild.get("Name") == "Communication":
                 for node in gchild:
-                    if node.get("Name") == "InstanceList":
+                    if node.get("Name") == "InstanceList" or node.get("Name") == "Instances":
                         # parse instances
                         for instNode in node.iter(f"{NAMESPACE}InternalElement"):
-                            if instNode.get("Name") == "InstanceList":
+                            if instNode.get("Name") == "InstanceList" or instNode.get("Name") == "Instances":
                                 continue
                             inst = Instance(name=instNode.get("Name"), id=instNode.get("ID"))
 
                             for attrNode in instNode.iter(f"{NAMESPACE}Attribute"):
-                                if attrNode.get("Name") == "VMin":
-                                    inst.addMin(int(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
+                                if attrNode.get("Name") == "RefID":
+                                    inst.addRefId(attrNode.findtext(f"{NAMESPACE}Value"))
+                                elif attrNode.get("Name") == "VMin":
+                                    inst.addMin(float(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
                                 elif attrNode.get("Name") == "VMax":
-                                    inst.addMax(int(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
+                                    inst.addMax(float(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
                                 elif attrNode.get("Name") == "VUnit":
                                     unitId = attrNode.findtext(f"{NAMESPACE}DefaultValue")
                                     inst.addUnit(getUnit(int(unitId)))
