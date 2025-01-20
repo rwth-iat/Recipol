@@ -1,8 +1,9 @@
 from defusedxml.ElementTree import parse
 
 ### static variables
-#TESTMTP = r"Artefakte\HC10_manifest.aml"
-TESTMTP = r"Artefakte\HC30_manifest.aml"
+TESTMTP1 = r"Artefakte\HC10_manifest.aml"
+TESTMTP2 = r"Artefakte\HC30_manifest.aml"
+TESTMTPS = [TESTMTP1, TESTMTP2]
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
@@ -201,74 +202,81 @@ def getUnit(unitNr: int) -> str:
 
 ### start main
 
-# parse mtp file
-tree = parse(TESTMTP)
-root = tree.getroot()
+mtps:list[Mtp] = []
 
-# create mtp object
-mtp = Mtp()
+# parse mtp files
+for file in TESTMTPS:
+    tree = parse(file)
+    root = tree.getroot()
 
-# parse mtp
-for child in root:
-    if child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "ModuleTypePackage":
-        # fetch name of mtp
-        mtp.nameMtp(name=child.find(f"{NAMESPACE}InternalElement").get("Name"))
+    # create mtp object
+    mtp = Mtp()
+    mtps.append(mtp)
 
-        for gchild in child.iter(f"{NAMESPACE}InternalElement"):
-            if gchild.get("Name") == "CommunicationSet" or gchild.get("Name") == "Communication":
-                for node in gchild:
-                    if node.get("Name") == "InstanceList" or node.get("Name") == "Instances":
-                        # parse instances
-                        for instNode in node.iter(f"{NAMESPACE}InternalElement"):
-                            if instNode.get("Name") == "InstanceList" or instNode.get("Name") == "Instances":
-                                continue
-                            inst = Instance(name=instNode.get("Name"), id=instNode.get("ID"))
+    # parse mtp
+    for child in root:
+        if child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "ModuleTypePackage":
+            # fetch name of mtp
+            mtp.nameMtp(name=child.find(f"{NAMESPACE}InternalElement").get("Name"))
 
-                            for attrNode in instNode.iter(f"{NAMESPACE}Attribute"):
-                                if attrNode.get("Name") == "RefID":
-                                    inst.addRefId(attrNode.findtext(f"{NAMESPACE}Value"))
-                                elif attrNode.get("Name") == "VMin":
-                                    inst.addMin(float(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
-                                elif attrNode.get("Name") == "VMax":
-                                    inst.addMax(float(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
-                                elif attrNode.get("Name") == "VUnit":
-                                    unitId = attrNode.findtext(f"{NAMESPACE}DefaultValue")
-                                    inst.addUnit(getUnit(int(unitId)))
+            for gchild in child.iter(f"{NAMESPACE}InternalElement"):
+                if gchild.get("Name") == "CommunicationSet" or gchild.get("Name") == "Communication":
+                    for node in gchild:
+                        if node.get("Name") == "InstanceList" or node.get("Name") == "Instances":
+                            # parse instances
+                            for instNode in node.iter(f"{NAMESPACE}InternalElement"):
+                                if instNode.get("Name") == "InstanceList" or instNode.get("Name") == "Instances":
+                                    continue
+                                inst = Instance(name=instNode.get("Name"), id=instNode.get("ID"))
 
-                            # add instance to mtp
-                            mtp.addInstance(inst)
+                                for attrNode in instNode.iter(f"{NAMESPACE}Attribute"):
+                                    if attrNode.get("Name") == "RefID":
+                                        inst.addRefId(attrNode.findtext(f"{NAMESPACE}Value"))
+                                    elif attrNode.get("Name") == "VMin":
+                                        inst.addMin(float(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
+                                    elif attrNode.get("Name") == "VMax":
+                                        inst.addMax(float(attrNode.findtext(f"{NAMESPACE}DefaultValue")))
+                                    elif attrNode.get("Name") == "VUnit":
+                                        unitId = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                        inst.addUnit(getUnit(int(unitId)))
 
-    elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
-        for gchild in child:
-            if gchild.tag == f"{NAMESPACE}InternalElement":
-                servName = gchild.get("Name") # name of the service
-                servId = gchild.get("ID") # id of the service
-                procCount = 0 # number of procedures under service
+                                # add instance to mtp
+                                mtp.addInstance(inst)
 
-                # get procedures
-                for ggchild in gchild:
-                    if ggchild.tag == f"{NAMESPACE}InternalElement":
-                        procName = ggchild.get("Name") # name of the procedure
-                        procId = ggchild.get("ID") # id of the procedure
-                        proc = Procedure(name=procName, id=procId)
-                        procCount += 1
+        elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
+            for gchild in child:
+                if gchild.tag == f"{NAMESPACE}InternalElement":
+                    servName = gchild.get("Name") # name of the service
+                    servId = gchild.get("ID") # id of the service
+                    procCount = 0 # number of procedures under service
 
-                        # add the procedure to the mtp's procedures
-                        mtp.addProcedure(proc)
+                    # get procedures
+                    for ggchild in gchild:
+                        if ggchild.tag == f"{NAMESPACE}InternalElement":
+                            procName = ggchild.get("Name") # name of the procedure
+                            procId = ggchild.get("ID") # id of the procedure
+                            proc = Procedure(name=procName, id=procId)
+                            procCount += 1
 
-                        for paramNode in ggchild:
-                            if paramNode.tag == f"{NAMESPACE}InternalElement":
-                                for refNode in paramNode.iter(f"{NAMESPACE}Attribute"):
-                                    if refNode.get("Name") == "RefID" and mtp.hasInstance(refNode.findtext(f"{NAMESPACE}Value")):
-                                        # get the instance the procedure refers to 
-                                        procParam = mtp.getInstance(refNode.findtext(f"{NAMESPACE}Value"))
+                            # add the procedure to the mtp's procedures
+                            mtp.addProcedure(proc)
 
-                                        # add the instance to the procedure's params
-                                        proc.addParameter(procParam)
-                            elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "IsSelfCompleting":
-                                proc.setSelfCompleting(paramNode.findtext(f"{NAMESPACE}Value"))
+                            for paramNode in ggchild:
+                                if paramNode.tag == f"{NAMESPACE}InternalElement":
+                                    for refNode in paramNode.iter(f"{NAMESPACE}Attribute"):
+                                        if refNode.get("Name") == "RefID" and mtp.hasInstance(refNode.findtext(f"{NAMESPACE}Value")):
+                                            # get the instance the procedure refers to 
+                                            procParam = mtp.getInstance(refNode.findtext(f"{NAMESPACE}Value"))
+
+                                            # add the instance to the procedure's params
+                                            proc.addParameter(procParam)
+                                elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "IsSelfCompleting":
+                                    proc.setSelfCompleting(paramNode.findtext(f"{NAMESPACE}Value"))
 
 
-                if procCount == 0:
-                    # no procedures, add the service instead
-                    mtp.addProcedure(Procedure(name=servName, id=servId))
+                    if procCount == 0:
+                        # no procedures, add the service instead
+                        mtp.addProcedure(Procedure(name=servName, id=servId))
+
+for m in mtps:
+    print(m)
