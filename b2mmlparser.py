@@ -112,16 +112,17 @@ class Element:
 
         self.etype = etype
         self.id = id
+        self.name = None
         self.preds = [] # the element(s) that precedes this element
         self.posts = [] # the element(s) that follow this element
 
     def __str__(self):
         if self.init:
-            descr = f"Initial {self.etype} {self.id}:\n"
+            descr = f"Initial {self.etype} {self.name}:\n"
         else:
-            descr = f"{self.etype} {self.id}:\n"
+            descr = f"{self.etype} {self.name}:\n"
 
-        descr += f"    Predecessors: {','.join(p.id for p in self.preds)}\n"
+        descr += f"    Predecessors: {','.join(p.name for p in self.preds)}\n"
 
         if self.etype == "Step":
             descr += f"    Requirements: {','.join(r.id for r in self.reqs)}\n"
@@ -131,13 +132,21 @@ class Element:
         else:
             descr += f"    Condition: {self.cond}\n"
 
-        descr += f"    Successors: {','.join(p.id for p in self.posts)}\n"
+        descr += f"    Successors: {','.join(p.name for p in self.posts)}\n"
 
         return descr
 
     def getId(self) -> str:
         """Returns the id of the element"""
         return self.id
+    
+    def setName(self, name:str) -> None:
+        """Gives a name to the element"""
+        self.name = name
+    
+    def getName(self) -> str:
+        """Returns the name of the element"""
+        return self.name
 
     def addPred(self, pred:Element):
         """Adds a predecessor to the list of preds"""
@@ -364,11 +373,15 @@ def parseMasterRecipe(node):
                     # replace the procedure logic id by the recipe element id
                     if stepElem is not None:
                         stepElem.changeId(gchild.findtext(f"{NAMESPACE}RecipeElementID"))
+                        stepElem.setName(gchild.findtext(f"{NAMESPACE}Description"))
                 elif gchild.tag == f"{NAMESPACE}Transition":
                     transElem = bml.getElement(gchild.findtext(f"{NAMESPACE}ID"))
                     
                     # add condition
                     transElem.addCond(gchild.findtext(f"{NAMESPACE}Condition"))
+
+                    # add name
+                    transElem.setName(name=transElem.getId())
 
         elif child.tag == f"{NAMESPACE}RecipeElement":
             # get the element

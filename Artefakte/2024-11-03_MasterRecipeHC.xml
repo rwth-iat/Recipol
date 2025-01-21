@@ -228,19 +228,19 @@
 				<b2mml:ID>S2</b2mml:ID>
 				<b2mml:RecipeElementID>948d5e71-76b1-4093-b11c-6d29a70e0e84</b2mml:RecipeElementID>
 				<b2mml:RecipeElementVersion />
-				<b2mml:Description>Stirring Educt 1</b2mml:Description>
+				<b2mml:Description>HC10:Stirring:Continuous_Stirring</b2mml:Description>
 			</b2mml:Step>
 			<b2mml:Step>
 				<b2mml:ID>S3</b2mml:ID>
 				<b2mml:RecipeElementID>HC20:Stirring:Continuous_Stirring</b2mml:RecipeElementID>
 				<b2mml:RecipeElementVersion />
-				<b2mml:Description>Stirring Educt 2</b2mml:Description>
+				<b2mml:Description>HC20:Stirring:Continuous_Stirring</b2mml:Description>
 			</b2mml:Step>
 			<b2mml:Step>
 				<b2mml:ID>S4</b2mml:ID>
 				<b2mml:RecipeElementID>39a8c488-23b4-46e9-b3af-57a2ac413b16</b2mml:RecipeElementID>
 				<b2mml:RecipeElementVersion />
-				<b2mml:Description>Stirring Educt 3</b2mml:Description>
+				<b2mml:Description>HC30:Stirring:Continuous_Stirring</b2mml:Description>
 			</b2mml:Step>
 			<b2mml:Step>
 				<b2mml:ID>S5</b2mml:ID>

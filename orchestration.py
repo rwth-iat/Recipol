@@ -42,16 +42,16 @@ for p in procedure:
         for pp in p:
             if type(pp) is dict:
                 if pp['mtp'] is not None:
-                    print(f"BML: {pp['bml'].getId()}, MTP: {pp['mtp'].getName()}")
+                    print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].getName()}")
                 else:
-                    print(f"BML: {pp['bml'].getId()}, None")
+                    print(f"BML: {pp['bml'].getName()}, None")
             else:
-                print(f"TRANS: {pp.getId()}")
+                print(f"TRANS: {pp.getName()}")
     else:
         if type(p) is dict:
             if p['mtp'] is not None:
-                print(f"BML: {p['bml'].getId()}, MTP: {p['mtp'].getName()}")
+                print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].getName()}")
             else:
-                print(f"BML: {p['bml'].getId()}, None")
+                print(f"BML: {p['bml'].getName()}, None")
         else:
-            print(f"TRANS: {p.getId()}")
+            print(f"TRANS: {p.getName()}")
