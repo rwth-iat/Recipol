@@ -9,7 +9,11 @@ for elem in bml.sortedList:
     if type(elem) is not list:
         if elem.getType() == "Step":
             # map to mtp instance
-            mInst = mtp.mtp.getInstance(instId=elem.getId())
+            for m in mtp.mtps:
+                mInst = m.getInstance(instId=elem.getId())
+                if mInst is not None:
+                    break
+            
             # add tuple
             procedure.append({'bml': elem, 'mtp': mInst})
         else:
@@ -21,7 +25,11 @@ for elem in bml.sortedList:
         # iterate over items
         for e in elem:
             if e.getType() == "Step":
-                mInst = mtp.mtp.getInstance(instId=e.getId())
+                for m in mtp.mtps:
+                    mInst = m.getInstance(instId=e.getId())
+                    if mInst is not None:
+                        break
+                
                 sl.append({'bml': e, 'mtp': mInst})
             else:
                 # we don't have to match transitions to anything, simpy add

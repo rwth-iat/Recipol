@@ -278,5 +278,5 @@ for file in TESTMTPS:
                         # no procedures, add the service instead
                         mtp.addProcedure(Procedure(name=servName, id=servId))
 
-for m in mtps:
-    print(m)
+# for m in mtps:
+#     print(m)
