@@ -6,7 +6,7 @@ from enum import Enum
 
 
 ### static variables
-TESTXML = r"Artefakte\2024-11-03_MasterRecipeHC.xml"
+TESTXML = r"Artefakte\Wabe10_Grundrezept.xml"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
 ### classes

@@ -8,9 +8,12 @@ for elem in bml.sortedList:
     # iterate over elements in list
     if type(elem) is not list:
         if elem.getType() == "Step":
+            elemId:str = elem.getId()
+            if ":" in elemId:
+                elemId = elemId[elemId.rfind(":")+1:]
             # map to mtp instance
             for m in mtp.mtps:
-                mInst = m.getInstance(instId=elem.getId())
+                mInst = m.getInstance(instId=elemId)
                 if mInst is not None:
                     break
             
@@ -25,8 +28,11 @@ for elem in bml.sortedList:
         # iterate over items
         for e in elem:
             if e.getType() == "Step":
+                elemId:str = elem.getId()
+                if ":" in elemId:
+                    elemId = elemId[elemId.rfind(":")+1:]
                 for m in mtp.mtps:
-                    mInst = m.getInstance(instId=e.getId())
+                    mInst = m.getInstance(instId=elemId)
                     if mInst is not None:
                         break
                 
