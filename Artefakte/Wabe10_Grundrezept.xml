@@ -263,7 +263,7 @@
 
 	<b2mml:EquipmentElement>
 		<b2mml:ID>HC10Instance</b2mml:ID>
-		<b2mml:EquipmentElementType>Instance</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementType>Element</b2mml:EquipmentElementType>
 		<b2mml:EquipmentElementLevel>EquipmentModule</b2mml:EquipmentElementLevel>
 		<!--b2mml:ClassInstanceAssociation>
 			<b2mml:ClassEquipmentID>HC10Class</b2mml:ClassEquipmentID>
@@ -298,7 +298,7 @@
 				<b2mml:Value>
 					<b2mml:ValueString>20</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
-					<b2mml:DataType>temperature</b2mml:DataType>
+					<b2mml:DataType>Measure</b2mml:DataType>
 					<b2mml:UnitOfMeasure>degree Celsius</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>

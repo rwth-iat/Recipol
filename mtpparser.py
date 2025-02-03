@@ -3,7 +3,7 @@ from defusedxml.ElementTree import parse
 ### static variables
 TESTMTP1 = r"Artefakte\HC10_manifest.aml"
 TESTMTP2 = r"Artefakte\HC30_manifest.aml"
-TESTMTPS = [TESTMTP1, TESTMTP2]
+TESTMTPS = [TESTMTP1] #, TESTMTP2
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes

@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from defusedxml.ElementTree import parse
-from enum import Enum
+import xmlschema
 
 
 ### static variables
-TESTXML = r"Artefakte\Wabe10_Grundrezept.xml"
+TESTXML = r"Artefakte\2024-11-03_MasterRecipeHC.xml"
+SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
 ### classes
@@ -113,6 +114,7 @@ class Element:
         self.etype = etype
         self.id = id
         self.name = None
+        self.retype = None
         self.preds = [] # the element(s) that precedes this element
         self.posts = [] # the element(s) that follow this element
 
@@ -147,6 +149,14 @@ class Element:
     def getName(self) -> str:
         """Returns the name of the element"""
         return self.name
+
+    def setRecipeElementType(self, type:str) -> None:
+        """Adds a RecipeElementType to the element"""
+        self.retype = type
+
+    def getRecipeElementType(self) -> str:
+        """Returns the RecipeElementType"""
+        return self.retype
 
     def addPred(self, pred:Element):
         """Adds a predecessor to the list of preds"""
@@ -386,6 +396,7 @@ def parseMasterRecipe(node):
         elif child.tag == f"{NAMESPACE}RecipeElement":
             # get the element
             thisElem = bml.getElement(child.findtext(f"{NAMESPACE}ID"))
+            thisElem.setRecipeElementType(child.findtext(f"{NAMESPACE}RecipeElementType"))
             if child.findtext(f"{NAMESPACE}RecipeElementType") == "Begin":
                 # set as initial element
                 thisElem.setInit()
@@ -573,6 +584,9 @@ def sortElements():
     return orderedList
 
 ### start main
+
+# valide b2mml file
+#xmlschema.validate(TESTXML, SCHEMA)
 
 # parse b2mml file
 tree = parse(TESTXML)
