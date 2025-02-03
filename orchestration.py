@@ -46,21 +46,48 @@ for elem in bml.sortedList:
         # add sublist to procedure
         procedure.append(sl)
 
+# user check before continuation
 for p in procedure:
     if type(p) is list:
-        for pp in p:
-            if type(pp) is dict:
-                if pp['mtp'] is not None:
-                    print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].getName()}")
-                else:
-                    print(f"BML: {pp['bml'].getName()}, None")
-            else:
-                print(f"TRANS: {pp.getName()}")
+        if type(p[0]) is dict:
+            print("     |")
+            print("  _______")
+            print(" |       |")
+            print(" |       |")
+            print(" |_______|")
     else:
         if type(p) is dict:
-            if p['mtp'] is not None:
-                print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].getName()}")
-            else:
-                print(f"BML: {p['bml'].getName()}, None")
+            name = p['bml'].getName()
+            namelen = len(name)
+            print("  ____|____")
+            print(" |         |")
+            while namelen > 0:
+                print(f" | {name[:7]: <7} |")
+                name = name[7:]
+                namelen = namelen -7
+            print(" |_________|")
+            print("     _|_")
         else:
-            print(f"TRANS: {p.getName()}")
+            print(f"    |___| - {p.getCond()}")
+
+print("\n" * 3)
+ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
+
+# for p in procedure:
+#     if type(p) is list:
+#         for pp in p:
+#             if type(pp) is dict:
+#                 if pp['mtp'] is not None:
+#                     print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].getName()}")
+#                 else:
+#                     print(f"BML: {pp['bml'].getName()}, None")
+#             else:
+#                 print(f"TRANS: {pp.getName()}")
+#     else:
+#         if type(p) is dict:
+#             if p['mtp'] is not None:
+#                 print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].getName()}")
+#             else:
+#                 print(f"BML: {p['bml'].getName()}, None")
+#         else:
+#             print(f"TRANS: {p.getName()}")

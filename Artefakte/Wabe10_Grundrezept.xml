@@ -116,8 +116,8 @@
 					<b2mml:IDScope>External</b2mml:IDScope>
 				</b2mml:FromID>
 				<b2mml:ToID>
-					<b2mml:ToIDValue>S3</b2mml:ToIDValue>
-					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:ToIDValue>T2</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
 					<b2mml:IDScope>External</b2mml:IDScope>
 				</b2mml:ToID>
 				<b2mml:LinkType>ControlLink</b2mml:LinkType>
@@ -129,8 +129,44 @@
 				<!--!!execution	sequence link between the steps and transitions-->
 				<b2mml:ID>L4</b2mml:ID>
 				<b2mml:FromID>
+					<b2mml:FromIDValue>T2</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>S3</b2mml:ToIDValue>
+					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L5</b2mml:ID>
+				<b2mml:FromID>
 					<b2mml:FromIDValue>S3</b2mml:FromIDValue>
 					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>T3</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L6</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>T3</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
 					<b2mml:IDScope>External</b2mml:IDScope>
 				</b2mml:FromID>
 				<b2mml:ToID>
@@ -145,10 +181,28 @@
 			</b2mml:Link>
 			<b2mml:Link>
 				<!--!!execution	sequence link between the steps and transitions-->
-				<b2mml:ID>L5</b2mml:ID>
+				<b2mml:ID>L7</b2mml:ID>
 				<b2mml:FromID>
 					<b2mml:FromIDValue>S4</b2mml:FromIDValue>
 					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>T4</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L8</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>T4</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
 					<b2mml:IDScope>External</b2mml:IDScope>
 				</b2mml:FromID>
 				<b2mml:ToID>
@@ -200,7 +254,28 @@
 				<b2mml:Condition>True</b2mml:Condition>
 				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
 				<!--b2mml:Description>string</b2mml:Description-->
-			</b2mml:Transition>			
+			</b2mml:Transition>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T2</b2mml:ID>
+				<b2mml:Condition>001:Stirring:Duration_Stirring == Completed</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T3</b2mml:ID>
+				<b2mml:Condition>002:Stirring:Duration_Stirring == Completed</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T4</b2mml:ID>
+				<b2mml:Condition>003:Stirring:Duration_Stirring == Completed</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>												
 		</b2mml:ProcedureLogic>
 
 		<!--!!Begin and End of procedure can be specified in ElementType-->

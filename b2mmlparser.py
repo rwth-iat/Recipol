@@ -6,7 +6,7 @@ import xmlschema
 
 
 ### static variables
-TESTXML = r"Artefakte\2024-11-03_MasterRecipeHC.xml"
+TESTXML = r"Artefakte\Wabe10_Grundrezept.xml"
 SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
@@ -181,6 +181,10 @@ class Element:
     def addCond(self, cond:str):
         """Adds a condition to the transition"""
         self.cond = cond
+
+    def getCond(self) -> str:
+        """Returns the condition of the transition"""
+        return self.cond
 
     def getType(self) -> str | None:
         """Returns the type of the element"""
