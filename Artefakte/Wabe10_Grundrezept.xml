@@ -338,7 +338,7 @@
 
 	<b2mml:EquipmentElement>
 		<b2mml:ID>HC10Instance</b2mml:ID>
-		<b2mml:EquipmentElementType>Element</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementType>Other</b2mml:EquipmentElementType>
 		<b2mml:EquipmentElementLevel>EquipmentModule</b2mml:EquipmentElementLevel>
 		<!--b2mml:ClassInstanceAssociation>
 			<b2mml:ClassEquipmentID>HC10Class</b2mml:ClassEquipmentID>
