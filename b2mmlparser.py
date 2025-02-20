@@ -589,7 +589,7 @@ def sortElements():
 
 ### start main
 
-# valide b2mml file
+# validate b2mml file
 xmlschema.validate(TESTXML, SCHEMA)
 
 # parse b2mml file
