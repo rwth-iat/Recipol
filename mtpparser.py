@@ -67,6 +67,7 @@ class Mtp:
         self.name = "" # name of the mtp 
         self.insts = [] # list of instances
         self.procs = [] # list of procedures
+        self.url = "" # address of the opc ua server
 
     def __str__(self):
         descr = f"{self.name}\nInstances:"
@@ -104,6 +105,14 @@ class Mtp:
     def addProcedure(self, proc:Procedure) -> None:
         """Adds a procedure to the mtp."""
         self.procs.append(proc)
+
+    def addUrl(self, url:str) -> None:
+        """Adds an opc ua server url to the mtp"""
+        self.url = url
+
+    def getUrl(self) -> str:
+        """Returns the url of the opc ua server"""
+        return self.url
 
 ### functions
 def getUnit(unitNr: int) -> str:
@@ -242,6 +251,16 @@ for file in TESTMTPS:
 
                                 # add instance to mtp
                                 mtp.addInstance(inst)
+                        elif node.get("Name") == "SourceList" or node.get("Name") == "Sources":
+                            # parse url
+                            for c in node.find(f"{NAMESPACE}InternalElement"):
+                                opcUrl = c.findtext(f"{NAMESPACE}Value")
+                                if opcUrl == None:
+                                    continue
+                                else:
+                                    mtp.addUrl(url=opcUrl)
+                                    break
+                            print(mtp.getUrl())
 
         elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
             for gchild in child:
