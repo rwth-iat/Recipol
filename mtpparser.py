@@ -1427,7 +1427,7 @@ for file in TESTMTPS:
                     for ggchild in gchild:
                         if ggchild.tag == f"{NAMESPACE}InternalElement":
                             procName = ggchild.get("Name") # name of the procedure
-                            procId = ggchild.get("ID") # id of the procedure
+                            procId = ggchild.findtext(f"./{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value") # id of the procedure
                             proc = Procedure(name=procName, id=procId)
                             procCount += 1
 

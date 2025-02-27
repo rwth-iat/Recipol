@@ -13,7 +13,7 @@ for elem in bml.sortedList:
                 elemId = elemId[elemId.rfind(":")+1:]
             # map to mtp instance
             for m in mtp.mtps:
-                mInst = m.getInstance(instId=elemId)
+                mInst = m.getProcedure(id=elemId)
                 if mInst is not None:
                     break
             else:
