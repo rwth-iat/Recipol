@@ -18,7 +18,7 @@ for elem in bml.sortedList:
                     break
             else:
                 if not (elem.getRecipeElementType() == "Begin" or elem.getRecipeElementType() == "End"):
-                    raise RuntimeError(f"Could not find the element {elem.getName()}. Please ensure that the corresponding MTP has been imported.")                    
+                    raise RuntimeError(f"Could not find the element {elem.getName()}. Please ensure that the corresponding MTP has been imported.")
             
             # add tuple
             procedure.append({'bml': elem, 'mtp': mInst})

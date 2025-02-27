@@ -495,7 +495,7 @@ def parseResource(node):
                 if procStep is not None:
                     procStep.addProcedure(thisProc)
 
-def sortElements():
+def sortElements() -> list[Element]:
     # get initial element
     initElem = bml.getInitialElement()
     # list of sorted elements

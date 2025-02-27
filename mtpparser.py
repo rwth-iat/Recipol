@@ -94,7 +94,7 @@ class Mtp:
             
         return False
     
-    def getInstance(self, instId:str) -> Instance | None:
+    def getInstance(self, instId:str) -> Instance:
         """Returns the instance with the given id"""
         for i in self.insts:
             if i.id == instId or i.refid == instId:
@@ -113,6 +113,14 @@ class Mtp:
     def getUrl(self) -> str:
         """Returns the url of the opc ua server"""
         return self.url
+    
+    def getProcedure(self, id:str) -> Procedure:
+        """Returns the procedure with the specified id"""
+        for p in self.procs:
+            if p.id == id:
+                return p
+            
+        return None
 
 ### functions
 def getUnit(unitNr: int) -> str:
@@ -1407,7 +1415,6 @@ for file in TESTMTPS:
                                 else:
                                     mtp.addUrl(url=opcUrl)
                                     break
-                            print(mtp.getUrl())
 
         elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
             for gchild in child:
