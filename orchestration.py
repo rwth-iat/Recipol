@@ -19,6 +19,22 @@ for elem in bml.sortedList:
             else:
                 if not (elem.getRecipeElementType() == "Begin" or elem.getRecipeElementType() == "End"):
                     raise RuntimeError(f"Could not find the element {elem.getName()}. Please ensure that the corresponding MTP has been imported.")
+                
+            # check for params
+            params = elem.getParameter()
+            if len(params) > 0:
+                # fetch corresponding parameter
+                for p in params:
+                    if ":" in p.id:
+                        pid = p.id[p.id.rfind(":")+1:]
+                    mParam = mInst.getParameter(pid)
+                    if mParam is None:
+                        raise RuntimeError(f"Invalid parameter ID {p.id}.")
+                    else:
+                        if p.unit.lower() != mParam.unit.lower():
+                            raise RuntimeError(f"Invalid unit for parameter {mParam.name}. Expected {mParam.unit}, received {p.unit}.")
+                        elif float(p.value) < mParam.min or float(p.value) > mParam.max:
+                            raise RuntimeError(f"Invalid value for parameter {mParam.name}. The value has to be within {mParam.min,mParam.max}")
             
             # add tuple
             procedure.append({'bml': elem, 'mtp': mInst})

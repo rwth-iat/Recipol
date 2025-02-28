@@ -58,6 +58,14 @@ class Procedure:
         """Adds a parameter to the procedure"""
         self.params.append(param)
 
+    def getParameter(self, id:str) -> Instance:
+        """Returns the specified parameter"""
+        for p in self.params:
+            if p.id == id:
+                return p
+            
+        return None
+
     def setSelfCompleting(self, complFlag:bool) -> None:
         """Sets the self completing flag of the procedure"""
         self.compl = complFlag

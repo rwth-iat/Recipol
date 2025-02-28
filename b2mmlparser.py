@@ -214,6 +214,10 @@ class Element:
         """Adds a parameter to the element's parameters"""
         self.params.append(param)
 
+    def getParameter(self) -> list[Parameter]:
+        """Returns the parameter of the element"""
+        return self.params
+
     def addProcedure(self, proc:Procedure):
         """Adds a procedure to the element's procedures"""
         self.acts.append(proc)
