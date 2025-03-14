@@ -4,16 +4,20 @@ from asyncua import Client, ua
 
 import time
 
+import orchestration as oc
+
+### static variables
 url = "opc.tcp://192.168.0.10:4840"
 namespace = "urn:BeckhoffAutomation:Ua:PLC1"
-
+proc = oc.procedure
 
 async def main():
 
     print(f"Connecting to {url} ...")
     async with Client(url=url) as client:
         # Find the namespace index
-        nsidx = await client.get_namespace_index(namespace)
+        # nsidx = await client.get_namespace_index(namespace)
+        nsid, nsidx = await client.get_namespace_array()
         #print(f"Namespace Index for '{namespace}': {nsidx}")
 
         # check state of dosing
@@ -114,3 +118,22 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+### main
+for p in proc:
+    if type(p) is list:
+        if type(p[0]) is dict:
+            # step in a parallel function
+            pass
+        else:
+            # transition in a parallel function
+            pass
+    else:
+        if type(p) is dict:
+            # simple step
+            if p['mtp'] is None:
+                # either initial or end step
+                continue
+            else:
+                # fetch opc url
+                url = p['mtp'].url
