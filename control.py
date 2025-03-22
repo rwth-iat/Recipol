@@ -117,23 +117,49 @@ async def main():
 
 
 if __name__ == "__main__":
+    matFlag = True
+    # preliminary check for material requirements
+    for p in proc:
+        if type(p) is list:
+            if type(p[0]) is dict:
+                # step in a parallel function
+                pass
+        else:
+            if type(p) is dict:
+                # simple step
+                for r in p['bml'].reqs:
+                    if "Material" in r.const:
+                        # check by operator
+                        material = r.const[r.const.rfind("=")+1:]
+                        ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
+                        if ack.lower() == "y":
+                            continue
+                        else:
+                            matFlag = False
+                            break
+    if matFlag:
+        for p in proc:
+            if type(p) is list:
+                if type(p[0]) is dict:
+                    # step in a parallel function
+                    pass
+                else:
+                    # transition in a parallel function
+                    pass
+            else:
+                if type(p) is dict:
+                    # simple step
+                    if p['mtp'] is None:
+                        # either initial or end step
+                        continue
+                    else:
+                        # fetch opc url if different from current url
+                        if p['mtp'].url != url:
+                            url = p['mtp'].url
+
+
+
+
     asyncio.run(main())
 
 ### main
-for p in proc:
-    if type(p) is list:
-        if type(p[0]) is dict:
-            # step in a parallel function
-            pass
-        else:
-            # transition in a parallel function
-            pass
-    else:
-        if type(p) is dict:
-            # simple step
-            if p['mtp'] is None:
-                # either initial or end step
-                continue
-            else:
-                # fetch opc url
-                url = p['mtp'].url

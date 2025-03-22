@@ -251,7 +251,7 @@
 			<b2mml:Transition>
 				<!--!!describes a single instance of a transition -->
 				<b2mml:ID>T1</b2mml:ID>
-				<b2mml:Condition>True</b2mml:Condition>
+				<b2mml:Condition>Temp HC10T21 == 80</b2mml:Condition>
 				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
 				<!--b2mml:Description>string</b2mml:Description-->
 			</b2mml:Transition>

@@ -592,27 +592,26 @@ def sortElements() -> list[Element]:
     return orderedList
 
 ### start main
-if __name__ == "__main__":
-    # validate b2mml file
-    xmlschema.validate(TESTXML, SCHEMA)
+# validate b2mml file
+xmlschema.validate(TESTXML, SCHEMA)
 
-    # parse b2mml file
-    tree = parse(TESTXML)
-    root = tree.getroot()
+# parse b2mml file
+tree = parse(TESTXML)
+root = tree.getroot()
 
-    # create bml object
-    bml = Bml()
+# create bml object
+bml = Bml()
 
-    # iterate over b2mml elements
-    for child in root:
-        if child.tag == f"{NAMESPACE}MasterRecipe":
-            # parse MasterRecipe
-            parseMasterRecipe(node=child)
-        elif child.tag == f"{NAMESPACE}EquipmentElement":
-            # parse Resources
-            parseResource(node=child)
+# iterate over b2mml elements
+for child in root:
+    if child.tag == f"{NAMESPACE}MasterRecipe":
+        # parse MasterRecipe
+        parseMasterRecipe(node=child)
+    elif child.tag == f"{NAMESPACE}EquipmentElement":
+        # parse Resources
+        parseResource(node=child)
 
-    # create list
-    sortedList = sortElements()
+# create list
+sortedList = sortElements()
 
-    #print(bml)
+#print(bml)
