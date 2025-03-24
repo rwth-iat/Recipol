@@ -15,7 +15,7 @@ if __name__ == "__main__":
                 # map to mtp instance
                 for m in mtp.mtps:
                     thisMtp = m
-                    mInst = m.getProcedure(id=elemId)
+                    mInst = m.getProcedure(procId=elemId)
                     if mInst is not None:
                         break
                 else:
