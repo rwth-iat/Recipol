@@ -173,6 +173,10 @@ def checkOperatorMode(opcurl:str, nsIndex:str, service:mtp.Service) -> bool:
     # return the value
     return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateOpAct']['ID']))
 
+def checkCurrentState(opcurl:str, nsIndex:str, service:mtp.Service) -> int:
+    # return the value
+    return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateCur']['ID']))
+
 def main():
     matFlag = True
     # preliminary check for material requirements
@@ -212,27 +216,27 @@ def main():
                     else:
                         # fetch service, procedure and parameters
                         url = p['mtp']. url
-                        #ns = asyncio.run(getNamespace(opcurl=url))
+                        ns = asyncio.run(getNamespace(opcurl=url))
                         service = p['mtp'].getService(p['inst'].serviceId)
                         procedure = p['inst']
                         params = p['params']
 
-                        # # set service to automatic mode
-                        # setOperationMode(opcurl=url, mode="aut", nsIndex=ns, service=service)
-                        # # check if mode has been set
-                        # while(True):
-                        #     if checkAutomaticMode(opcurl=url, nsIndex=ns, service=service):
-                        #         break
+                        # set service to automatic mode
+                        setOperationMode(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        # check if mode has been set
+                        while(True):
+                            if checkAutomaticMode(opcurl=url, nsIndex=ns, service=service):
+                                break
                         
-                        # # set procedure
-                        # setProcedure(opcurl=url, mode="aut", nsIndex=ns, service=service, procId=procedure.procId)
+                        # set procedure
+                        setProcedure(opcurl=url, mode="aut", nsIndex=ns, service=service, procId=procedure.procId)
 
-                        # # set paramaters
-                        # for par in params:
-                        #     changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par[0], value=par[1])
+                        # set paramaters
+                        for par in params:
+                            changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par[0], value=par[1])
 
-                        # # start service
-                        # startService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        # start service
+                        startService(opcurl=url, mode="aut", nsIndex=ns, service=service)
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
@@ -287,8 +291,42 @@ def main():
                         # to do
                         pass
                     elif kw == "Step":
-                        # to do
-                        pass
+                        # fetch the step
+                        step = next(s for s in proc if type(s) is dict and s['bml'].name == inst)
+                        service = step['mtp'].getService(step['inst'].serviceId)
+                        
+                        # check step state
+                        if value == "Idle":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 16:
+                                    break
+                        elif value == "Paused":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 32:
+                                    break
+                        elif value == "Held":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 2048:
+                                    break
+                        elif value == "Completed":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 131072:
+                                    break
+                            # reset state
+                            resetService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+
+                            # set all parameters to default
+                            params = []
+                            for par in step['inst'].params:
+                                changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par, value=par.default)
+                        elif value == "Stopped":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 4:
+                                    break
+                        elif value == "Aborted":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 512:
+                                    break
 
 
 async def main2():

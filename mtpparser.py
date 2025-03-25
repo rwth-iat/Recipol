@@ -14,6 +14,7 @@ class Instance:
         self.refid = None # refID of the instance
         self.min = None # minimal value of the instance
         self.max = None # maximal value of the instance
+        self.default = None # default value of the instance
         self.unit = None # unit of the instance
         self.paramElem = {'WQC': {'Type': 'BYTE', 'ID': None, 'Default': None},
                           'OSLevel': {'Type': 'BYTE', 'ID': None, 'Default': None},
@@ -1745,6 +1746,7 @@ for file in TESTMTPS:
                                         id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
                                         inst.paramElem['VReq']['ID'] = id
                                         inst.paramElem['VReq']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                        inst.default = float(attrNode.findtext(f"{NAMESPACE}DefaultValue"))
                                     elif attrNode.get("Name") == "VFbk":
                                         elemNode = attrNode.findtext(f"{NAMESPACE}Value")
                                         id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
