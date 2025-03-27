@@ -7,10 +7,9 @@ import mtpparser as mtp
 
 ### static variables
 url = "opc.tcp://192.168.0.10:4840"
-namespace = "urn:BeckhoffAutomation:Ua:PLC1"
-#proc = oc.procedure
-#print(proc)
-pea = mtp.mtps[0]
+#namespace = "urn:BeckhoffAutomation:Ua:PLC1"
+proc = oc.procedure
+pea = mtp.mtps[0]                        
 
 def getUaType(dtype:str) -> ua.VariantType:
     match(dtype):
@@ -166,7 +165,171 @@ def setOperationMode(opcurl:str, mode:str, nsIndex:str, service:mtp.Service) -> 
         # set operation mode to automatic
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateAutOp']['ID'], value=True, variantType=ua.VariantType.Boolean))
 
-async def main():
+def checkAutomaticMode(opcurl:str, nsIndex:str, service:mtp.Service) -> bool:
+    # return the value
+    return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateAutAct']['ID']))
+
+def checkOperatorMode(opcurl:str, nsIndex:str, service:mtp.Service) -> bool:
+    # return the value
+    return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateOpAct']['ID']))
+
+def checkCurrentState(opcurl:str, nsIndex:str, service:mtp.Service) -> int:
+    # return the value
+    return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateCur']['ID']))
+
+def main():
+    matFlag = True
+    # preliminary check for material requirements
+    # for p in proc:
+    #     if type(p) is list:
+    #         if type(p[0]) is dict:
+    #             # step in a parallel function
+    #             pass
+    #     else:
+    #         if type(p) is dict:
+    #             # simple step
+    #             for r in p['bml'].reqs:
+    #                 if "Material" in r.const:
+    #                     # check by operator
+    #                     material = r.const[r.const.rfind("=")+1:]
+    #                     ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
+    #                     if ack.lower() == "y":
+    #                         continue
+    #                     else:
+    #                         matFlag = False
+    #                         break
+    if matFlag:
+        for p in proc:
+            if type(p) is list:
+                if type(p[0]) is dict:
+                    # step in a parallel function
+                    pass
+                else:
+                    # transition in a parallel function
+                    pass
+            else:
+                if type(p) is dict:
+                    # simple step
+                    if p['inst'] is None:
+                        # either initial or end step
+                        continue
+                    else:
+                        # fetch service, procedure and parameters
+                        url = p['mtp']. url
+                        ns = asyncio.run(getNamespace(opcurl=url))
+                        service = p['mtp'].getService(p['inst'].serviceId)
+                        procedure = p['inst']
+                        params = p['params']
+
+                        # set service to automatic mode
+                        setOperationMode(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        # check if mode has been set
+                        while(True):
+                            if checkAutomaticMode(opcurl=url, nsIndex=ns, service=service):
+                                break
+                        
+                        # set procedure
+                        setProcedure(opcurl=url, mode="aut", nsIndex=ns, service=service, procId=procedure.procId)
+
+                        # set paramaters
+                        for par in params:
+                            changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par[0], value=par[1])
+
+                        # start service
+                        startService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                else:
+                    # simple transition
+                    # fetch keyword, instance, operator and value
+                    cond = p.cond
+                    if cond != "True":
+                        if "AND" in cond or "OR" in cond or "NOT" in cond:
+                            # To do 
+                            pass
+                        else:
+                            kw = cond[:cond.find(" ")]
+                            cond = cond[cond.find(" ")+1:]
+                            inst = cond[:cond.find(" ")]
+                            cond = cond[cond.find(" ")+1:]
+                            op = cond[:cond.find(" ")]
+                            cond = cond[cond.find(" ")+1:]
+                            value = cond
+                    else:
+                        kw = cond
+
+                    # check condition
+                    if kw == "True":
+                        # move on
+                        pass
+                    elif kw == "Level":
+                        # to do
+                        pass
+                    elif kw == "Temp":
+                        # to do
+                        pass
+                    elif kw == "Material":
+                        # already checked, move on
+                        pass
+                    elif kw == "Dens":
+                        # to do
+                        pass
+                    elif kw == "Flow":
+                        # to do
+                        pass
+                    elif kw == "Dist":
+                        # to do
+                        pass
+                    elif kw == "Time":
+                        # to do
+                        pass
+                    elif kw == "Pressure":
+                        # to do
+                        pass
+                    elif kw == "Speed":
+                        # to do
+                        pass
+                    elif kw == "Weight":
+                        # to do
+                        pass
+                    elif kw == "Step":
+                        # fetch the step
+                        step = next(s for s in proc if type(s) is dict and s['bml'].name == inst)
+                        service = step['mtp'].getService(step['inst'].serviceId)
+                        
+                        # check step state
+                        if value == "Idle":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 16:
+                                    break
+                        elif value == "Paused":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 32:
+                                    break
+                        elif value == "Held":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 2048:
+                                    break
+                        elif value == "Completed":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 131072:
+                                    break
+                            # reset state
+                            resetService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+
+                            # set all parameters to default
+                            params = []
+                            for par in step['inst'].params:
+                                changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par, value=par.default)
+                        elif value == "Stopped":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 4:
+                                    break
+                        elif value == "Aborted":
+                            while(True):
+                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 512:
+                                    break
+
+
+async def main2():
 
     print(f"Connecting to {url} ...")
     async with Client(url=url) as client:
@@ -272,50 +435,9 @@ async def main():
 
 ### main
 if __name__ == "__main__":
-    # matFlag = True
-    # # preliminary check for material requirements
-    # for p in proc:
-    #     if type(p) is list:
-    #         if type(p[0]) is dict:
-    #             # step in a parallel function
-    #             pass
-    #     else:
-    #         if type(p) is dict:
-    #             # simple step
-    #             for r in p['bml'].reqs:
-    #                 if "Material" in r.const:
-    #                     # check by operator
-    #                     material = r.const[r.const.rfind("=")+1:]
-    #                     ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
-    #                     if ack.lower() == "y":
-    #                         continue
-    #                     else:
-    #                         matFlag = False
-    #                         break
-    # if matFlag:
-    #     for p in proc:
-    #         if type(p) is list:
-    #             if type(p[0]) is dict:
-    #                 # step in a parallel function
-    #                 pass
-    #             else:
-    #                 # transition in a parallel function
-    #                 pass
-    #         else:
-    #             if type(p) is dict:
-    #                 # simple step
-    #                 if p['mtp'] is None:
-    #                     # either initial or end step
-    #                     continue
-    #                 else:
-    #                     # fetch opc url if different from current url
-    #                     if p['mtp'].url != url:
-    #                         url = p['mtp'].url
-    # asyncio.run(main())
-
-
-    service = pea.getService(id="7d5ec92e-5c19-4171-b21b-c17513ddf526")
-    print(asyncio.run(readNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'])))
+    #service = pea.getService(id="7d5ec92e-5c19-4171-b21b-c17513ddf526")
+    #print(asyncio.run(readNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'])))
     #print(asyncio.run(writeNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'], 2, ua.VariantType.UInt32)))
-    setProcedure(url, "op", 4, service, 0)
-    print(asyncio.run(readNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'])))
+    #setProcedure(url, "op", 4, service, 0)
+    #print(asyncio.run(readNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'])))
+    main()
