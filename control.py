@@ -6,7 +6,9 @@ from typing import Any
 import mtpparser as mtp
 
 ### static variables
-url = "opc.tcp://192.168.0.10:4840"
+#url = "opc.tcp://192.168.0.10:4840"
+url = ""
+ns = ""
 #namespace = "urn:BeckhoffAutomation:Ua:PLC1"
 proc = oc.procedure
 pea = mtp.mtps[0]                        
@@ -39,7 +41,8 @@ async def getNamespace(opcurl:str) -> str:
                 if not ns.isdecimal():
                     print("Not a valid number.")
                     ns = None 
-            return ns
+            nsid = await client.get_namespace_index(uri=nsarray[int(ns)])
+            return nsid
     
 async def writeNodeValue(opcurl:str, nsIndex:str, nodeAddress:str, value:Any, variantType:ua.VariantType) -> None:
     async with Client(url=opcurl) as client:
@@ -53,29 +56,29 @@ async def readNodeValue(opcurl:str, nsIndex:str, nodeAddress:str) -> Any:
         val = await node.read_value()
         return val
     
-def changeParameterValue(opcurl:str, mode:str, nsIndex:str, param:mtp.Instance, value:Any) -> None:
+def changeParameterValue(opcurl:str, mode:str, nsIndex:str, service:mtp.Service, param:mtp.Instance, value:Any) -> None:
     if mode == "op":
         # set value in operator mode
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['VOp']['ID'], value=value, variantType=ua.VariantType.Int32))
         # apply parameter changes
-        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['ProcParamApplyOp']['ID'], value=True, variantType=ua.VariantType.Boolean))
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcParamApplyOp']['ID'], value=True, variantType=ua.VariantType.Boolean))
     elif mode == "aut":
         # set value in automatic mode
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['VExt']['ID'], value=value, variantType=ua.VariantType.Int32))
         # apply parameter changes
-        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['ProcParamApplyExt']['ID'], value=True, variantType=ua.VariantType.Boolean))
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcParamApplyExt']['ID'], value=True, variantType=ua.VariantType.Boolean))
 
 def setProcedure(opcurl:str, mode:str, nsIndex:str, service:mtp.Service, procId:int) -> None:
     if mode == "op":
         # set value in operator mode
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcedureOp']['ID'], value=procId, variantType=ua.VariantType.UInt32))
         # apply parameter changes
-        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcParamApplyOp']['ID'], value=procId, variantType=ua.VariantType.Boolean))
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcParamApplyOp']['ID'], value=True, variantType=ua.VariantType.Boolean))
     elif mode == "aut":
         # set value in automatic mode
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcedureExt']['ID'], value=procId, variantType=ua.VariantType.UInt32))
         # apply parameter changes
-        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcParamApplyExt']['ID'], value=procId, variantType=ua.VariantType.Boolean))
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['ProcParamApplyExt']['ID'], value=True, variantType=ua.VariantType.Boolean))
 
 def startService(opcurl:str, mode:str, nsIndex:str, service:mtp.Service) -> None:
     if mode == "op":
@@ -164,6 +167,8 @@ def setOperationMode(opcurl:str, mode:str, nsIndex:str, service:mtp.Service) -> 
     elif mode == "aut":
         # set operation mode to automatic
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateAutOp']['ID'], value=True, variantType=ua.VariantType.Boolean))
+        # set source to external
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['SrcExtOp']['ID'], value=True, variantType=ua.VariantType.Boolean))
 
 def checkAutomaticMode(opcurl:str, nsIndex:str, service:mtp.Service) -> bool:
     # return the value
@@ -215,28 +220,31 @@ def main():
                         continue
                     else:
                         # fetch service, procedure and parameters
-                        url = p['mtp']. url
-                        ns = asyncio.run(getNamespace(opcurl=url))
+                        global url
+                        global ns
+                        if url != p['mtp'].url:
+                            url = p['mtp'].url
+                            ns = asyncio.run(getNamespace(opcurl=url))
                         service = p['mtp'].getService(p['inst'].serviceId)
                         procedure = p['inst']
                         params = p['params']
 
                         # set service to automatic mode
-                        setOperationMode(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        setOperationMode(opcurl=url, mode="op", nsIndex=ns, service=service)
                         # check if mode has been set
                         while(True):
-                            if checkAutomaticMode(opcurl=url, nsIndex=ns, service=service):
+                            if checkOperatorMode(opcurl=url, nsIndex=ns, service=service):
                                 break
                         
                         # set procedure
-                        setProcedure(opcurl=url, mode="aut", nsIndex=ns, service=service, procId=procedure.procId)
+                        setProcedure(opcurl=url, mode="op", nsIndex=ns, service=service, procId=procedure.procId)
 
                         # set paramaters
                         for par in params:
-                            changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par[0], value=par[1])
+                            changeParameterValue(opcurl=url, mode="op", nsIndex=ns, service=service, param=par[0], value=int(par[1]))
 
                         # start service
-                        startService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        startService(opcurl=url, mode="op", nsIndex=ns, service=service)
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
@@ -313,12 +321,12 @@ def main():
                                 if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 131072:
                                     break
                             # reset state
-                            resetService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                            resetService(opcurl=url, mode="op", nsIndex=ns, service=service)
 
                             # set all parameters to default
                             params = []
                             for par in step['inst'].params:
-                                changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, param=par, value=par.default)
+                                changeParameterValue(opcurl=url, mode="op", nsIndex=ns, service=service, param=par, value=int(par.default))
                         elif value == "Stopped":
                             while(True):
                                 if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 4:
@@ -435,9 +443,23 @@ async def main2():
 
 ### main
 if __name__ == "__main__":
-    #service = pea.getService(id="7d5ec92e-5c19-4171-b21b-c17513ddf526")
-    #print(asyncio.run(readNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'])))
-    #print(asyncio.run(writeNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'], 2, ua.VariantType.UInt32)))
-    #setProcedure(url, "op", 4, service, 0)
-    #print(asyncio.run(readNodeValue(url, 4, service.paramElem['ProcedureOp']['ID'])))
-    main()
+    service = pea.getService(id="fdc6b3c7-e28a-46fb-8d21-2f4cc584c788")
+    proc = service.procs[1]
+    param = proc.params[0]
+    url = "opc.tcp://192.168.0.10:4840"
+
+    setOperationMode(opcurl=url, mode="op", nsIndex=4, service=service)
+    changeParameterValue(opcurl=url, mode="op", nsIndex=4, service=service, param=param, value=5)
+    setProcedure(opcurl=url, mode="op", nsIndex=4, service=service, procId=2)
+    startService(opcurl=url, mode="op", nsIndex=4, service=service)
+
+    # setOperationMode(opcurl=url, mode="aut", nsIndex=4, service=service)
+    # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
+
+    # setOperationMode(opcurl=url, mode="aut", nsIndex=4, service=service)
+    # changeParameterValue(opcurl=url, mode="aut", nsIndex=4, service=service, param=param, value=5)
+    # setProcedure(opcurl=url, mode="aut", nsIndex=4, service=service, procId=2)
+    # startService(opcurl=url, mode="aut", nsIndex=4, service=service)
+    # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
+    
+    #main()

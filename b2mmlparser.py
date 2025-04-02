@@ -593,7 +593,7 @@ def sortElements() -> list[Element]:
 
 ### start main
 # validate b2mml file
-#xmlschema.validate(TESTXML, SCHEMA)
+xmlschema.validate(TESTXML, SCHEMA)
 
 # parse b2mml file
 tree = parse(TESTXML)

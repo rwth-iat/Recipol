@@ -1868,4 +1868,4 @@ for file in TESTMTPS:
                                 elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "IsSelfCompleting":
                                     proc.setSelfCompleting(paramNode.findtext(f"{NAMESPACE}Value"))
                                 elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "ProcedureID":
-                                    proc.procId = paramNode.findtext(f"{NAMESPACE}Value")
+                                    proc.procId = int(paramNode.findtext(f"{NAMESPACE}Value"))
