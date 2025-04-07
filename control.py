@@ -27,6 +27,41 @@ def getUaType(dtype:str) -> ua.VariantType:
             return ua.VariantType.Int32
         case "INT":
             return ua.VariantType.Int16
+        
+def getStateByEncoding(code:int) -> str:
+    match(code):
+        case 4:
+            return "Stopped"
+        case 8:
+            return "Starting"
+        case 16:
+            return "Idle"
+        case 32:
+            return "Paused"
+        case 64:
+            return "Execute"
+        case 128:
+            return "Stopping"
+        case 256:
+            return "Aborting"
+        case 512:
+            return "Aborted"
+        case 1024:
+            return "Holding"
+        case 2048:
+            return "Held"
+        case 4096:
+            return "Unholding"
+        case 8192:
+            return "Pausing"
+        case 16384:
+            return "Resuming"
+        case 32768:
+            return "Resetting"
+        case 65536:
+            return "Completing"
+        case 131072:
+            return "Completed"
 
 async def getNamespace(opcurl:str) -> str:
     async with Client(url=opcurl) as client:
@@ -182,6 +217,18 @@ def checkCurrentState(opcurl:str, nsIndex:str, service:mtp.Service) -> int:
     # return the value
     return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateCur']['ID']))
 
+def statusMonitoring(pea:mtp.Pea, url:str, idx:str) -> list[dict]:
+    # gives an overview of the statuses of the services, sensors and actuators of the current pea
+    statuses = []
+
+    for s in pea.servs:
+        statuses.append({"Name": s.name, "ID": s.refid, "Status": getStateByEncoding(code=checkCurrentState(opcurl=url, nsIndex=idx, service=s))})
+
+    for sa in pea.sensacts:
+        statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["VOut"]["ID"]))})
+
+    return statuses
+
 def main():
     matFlag = True
     # preliminary check for material requirements
@@ -230,21 +277,40 @@ def main():
                         params = p['params']
 
                         # set service to automatic mode
-                        setOperationMode(opcurl=url, mode="op", nsIndex=ns, service=service)
+                        setOperationMode(opcurl=url, mode="aut", nsIndex=ns, service=service)
                         # check if mode has been set
                         while(True):
                             if checkOperatorMode(opcurl=url, nsIndex=ns, service=service):
                                 break
                         
                         # set procedure
-                        setProcedure(opcurl=url, mode="op", nsIndex=ns, service=service, procId=procedure.procId)
+                        setProcedure(opcurl=url, mode="aut", nsIndex=ns, service=service, procId=procedure.procId)
 
                         # set paramaters
                         for par in params:
-                            changeParameterValue(opcurl=url, mode="op", nsIndex=ns, service=service, param=par[0], value=int(par[1]))
+                            changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, service=service, param=par[0], value=int(par[1]))
 
-                        # start service
-                        startService(opcurl=url, mode="op", nsIndex=ns, service=service)
+                        # check current State
+                        currState = checkCurrentState(opcurl=url, nsIndex=ns, service=service)
+
+                        if currState == 16:
+                            # idle, start service
+                            startService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        elif currState == 512:
+                            # aborted, abort
+                            return
+                        elif currState == 4:
+                            # stopped, abort
+                            return
+
+                        # status monitoring
+                        statuses = statusMonitoring(pea=p['mtp'], url=url, idx=ns)
+
+                        for s in statuses:
+                            if "Status" in s.keys:
+                                print(f"Name: {s['Name']}, Status: {s['Status']}")
+                            else:
+                                print(f"Name: {s['Name']}, Current Value: {s['CurrVal']}")
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
@@ -320,13 +386,19 @@ def main():
                             while(True):
                                 if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 131072:
                                     break
+                                elif checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 32:
+                                    # resume
+                                    resumeService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                                elif checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 2048:
+                                    # unhold
+                                    unholdService(opcurl=url, mode="aut", nsIndex=ns, service=service)
                             # reset state
-                            resetService(opcurl=url, mode="op", nsIndex=ns, service=service)
+                            resetService(opcurl=url, mode="aut", nsIndex=ns, service=service)
 
                             # set all parameters to default
                             params = []
                             for par in step['inst'].params:
-                                changeParameterValue(opcurl=url, mode="op", nsIndex=ns, service=service, param=par, value=int(par.default))
+                                changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, service=service, param=par, value=int(par.default))
                         elif value == "Stopped":
                             while(True):
                                 if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 4:
