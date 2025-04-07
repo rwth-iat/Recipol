@@ -1,10 +1,10 @@
 from defusedxml.ElementTree import parse
 
 ### static variables
-TESTMTP1 = r"Artefakte\HC10_new.aml"
+TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
 TESTMTP2 = r"Artefakte\HC20_manifest.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
-TESTMTPS = [TESTMTP2] 
+TESTMTPS = [TESTMTP1] 
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
@@ -149,6 +149,8 @@ class Pea:
     def __init__(self):
         self.name = "" # name of the mtp 
         self.insts = [] # list of instances
+        self.sensacts = [] # list of sensors and actuators
+        self.procs = [] # list of procedures
         self.servs = [] # list of services
         self.url = "" # address of the opc ua server
         self.nsid = None # index of the opc namespace
@@ -190,6 +192,13 @@ class Pea:
         """Adds a procedure to the mtp."""
         self.servs.append(serv)
 
+    def hasService(self, servId:str) -> bool:
+        """Returns true if the mtp has the corresponding service."""
+        for s in self.servs:
+            if s.id == servId or s.refid == servId:
+                return True
+        return False
+
     def addUrl(self, url:str) -> None:
         """Adds an opc ua server url to the mtp"""
         self.url = url
@@ -208,11 +217,25 @@ class Pea:
 
     def getProcedure(self, procId:str) -> Procedure:
         """Returns the procedure with the specified id"""
-        for s in self.servs:
-            for p in s.procs:
-                if p.id == procId:
-                    return p
+        for p in self.procs:
+            if p.id == procId:
+                return p
         return None
+    
+    def hasProcedure(self, procId:str) -> bool:
+        """Returns true if mtp has specified procedure."""
+        for p in self.procs:
+            if p.id == procId:
+                return True
+        return False
+    
+    def hasParameter(self, paramId:str) -> bool:
+        """Returns true if there is a parameter with the specified id."""
+        for p in self.procs:
+            for param in p.params:
+                if param.id == paramId:
+                    return True
+        return False
 
 ### functions
 def getUnit(unitNr: int) -> str:
@@ -1855,6 +1878,7 @@ for file in TESTMTPS:
                             procId = ggchild.findtext(f"./{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value") # id of the procedure
                             proc = Procedure(name=procName, id=procId)
                             serv.procs.append(proc)
+                            mtp.procs.append(proc)
                             proc.serviceId = serv.id
 
                             for paramNode in ggchild:
@@ -1871,10 +1895,25 @@ for file in TESTMTPS:
                                 elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "ProcedureID":
                                     proc.procId = int(paramNode.findtext(f"{NAMESPACE}Value"))
 
+    # get sensors and actuators
+    for i in mtp.insts:
+        if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
+            mtp.sensacts.append(i)
+
+# for s in mtp.servs:
+#     print(s.name)
+#     for p in s.procs:
+#         print("  ", p.name, p.id)
+#         for pa in p.params:
+#             print("    ", pa.name, pa.id, pa.default, pa.unit)
+#     print("\n")
+
+print("Services: ")
 for s in mtp.servs:
     print(s.name)
-    for p in s.procs:
-        print("  ", p.name, p.id)
-        for pa in p.params:
-            print("    ", pa.name, pa.id, pa.default, pa.unit)
-    print("\n")
+print("\n", "Procedures: ")
+for p in mtp.procs:
+    print(p.name)
+print("\n", "Sensors and Actuators: ")
+for sa in mtp.sensacts:
+    print(sa.name)
