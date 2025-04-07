@@ -6,7 +6,9 @@ import xmlschema
 
 
 ### static variables
-TESTXML = r"Artefakte\Wabe10_Grundrezept.xml"
+TESTXML10 = r"Artefakte\Wabe10_Grundrezept.xml"
+#TESTXML20 = r""
+TESTXML30 = r"Artefakte\Wabe30_Grundrezept.xml"
 SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
@@ -593,10 +595,10 @@ def sortElements() -> list[Element]:
 
 ### start main
 # validate b2mml file
-xmlschema.validate(TESTXML, SCHEMA)
+xmlschema.validate(TESTXML30, SCHEMA)
 
 # parse b2mml file
-tree = parse(TESTXML)
+tree = parse(TESTXML30)
 root = tree.getroot()
 
 # create bml object

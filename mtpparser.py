@@ -2,8 +2,9 @@ from defusedxml.ElementTree import parse
 
 ### static variables
 TESTMTP1 = r"Artefakte\HC10_new.aml"
-TESTMTP2 = r"Artefakte\HC30_manifest.aml"
-TESTMTPS = [TESTMTP1] 
+TESTMTP2 = r"Artefakte\HC20_manifest.aml"
+TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
+TESTMTPS = [TESTMTP2] 
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
@@ -1869,3 +1870,11 @@ for file in TESTMTPS:
                                     proc.setSelfCompleting(paramNode.findtext(f"{NAMESPACE}Value"))
                                 elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "ProcedureID":
                                     proc.procId = int(paramNode.findtext(f"{NAMESPACE}Value"))
+
+for s in mtp.servs:
+    print(s.name)
+    for p in s.procs:
+        print("  ", p.name, p.id)
+        for pa in p.params:
+            print("    ", pa.name, pa.id, pa.default, pa.unit)
+    print("\n")

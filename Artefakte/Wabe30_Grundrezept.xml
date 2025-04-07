@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<b2mml:BatchInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mesa.org/xml/B2MML Schema/AllSchemas.xsd"
+	xmlns:b2mml="http://www.mesa.org/xml/B2MML">
+	<b2mml:ListHeader>
+		<b2mml:ID>ListHeadID</b2mml:ID>
+		<b2mml:CreateDate>2025-01-21T10:27:00+01:00</b2mml:CreateDate>
+	</b2mml:ListHeader>
+	<b2mml:Description>
+		This Batch Information includes the Master Recipe "MasterRecipeHC" to be executed on the modular plant at IAT using the HC30 stirring device
+	</b2mml:Description>
+
+
+	<b2mml:MasterRecipe>
+		<b2mml:ID>MasterRecipeHC</b2mml:ID>
+		<b2mml:Version>1.0.0</b2mml:Version>
+		<b2mml:VersionDate>2025-01-21T10:27:00+01:00</b2mml:VersionDate>
+		<b2mml:Description>Example of a master recipe for the modular plant Honeycomb with HC30 stirring service</b2mml:Description>
+
+		<b2mml:Header>
+			<b2mml:ProductID>StirredWater1</b2mml:ProductID>
+			<b2mml:ProductName>Stirred Water</b2mml:ProductName>
+		</b2mml:Header>
+
+
+		<b2mml:EquipmentRequirement>
+			<b2mml:ID>Equipment Requirement for the HCs</b2mml:ID>
+			<b2mml:Constraint>
+				<b2mml:ID>Liquid constraint for the HC</b2mml:ID>
+				<!-- A string containing a condition expression. The format for the string expression is not defined in the standard.-->
+				<b2mml:Condition>Material == H2O</b2mml:Condition>
+			</b2mml:Constraint>
+			<b2mml:Description>Only water is allowed to used for the stirring process</b2mml:Description>
+		</b2mml:EquipmentRequirement>
+
+		<b2mml:Formula>
+			<b2mml:Parameter>
+				<b2mml:ID>001:39c48383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>3</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+			<b2mml:Parameter>
+				<b2mml:ID>002:39c48383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>5</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+			<b2mml:Parameter>
+				<b2mml:ID>003:39c48383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>10</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:Formula>
+
+		<b2mml:ProcedureLogic>
+			<!--!!order	and sequence of the use of the processes-->
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L1</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>S1</b2mml:FromIDValue>
+					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>T1</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L2</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>T1</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>S2</b2mml:ToIDValue>
+					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L3</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>S2</b2mml:FromIDValue>
+					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>T2</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L4</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>T2</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>S3</b2mml:ToIDValue>
+					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L5</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>S3</b2mml:FromIDValue>
+					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>T3</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L6</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>T3</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>S4</b2mml:ToIDValue>
+					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L7</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>S4</b2mml:FromIDValue>
+					<b2mml:FromType>Step</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>T4</b2mml:ToIDValue>
+					<b2mml:ToType>Transition</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>
+			<b2mml:Link>
+				<!--!!execution	sequence link between the steps and transitions-->
+				<b2mml:ID>L8</b2mml:ID>
+				<b2mml:FromID>
+					<b2mml:FromIDValue>T4</b2mml:FromIDValue>
+					<b2mml:FromType>Transition</b2mml:FromType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:FromID>
+				<b2mml:ToID>
+					<b2mml:ToIDValue>S5</b2mml:ToIDValue>
+					<b2mml:ToType>Step</b2mml:ToType>
+					<b2mml:IDScope>External</b2mml:IDScope>
+				</b2mml:ToID>
+				<b2mml:LinkType>ControlLink</b2mml:LinkType>
+				<b2mml:Depiction>LineAndArrow</b2mml:Depiction>
+				<b2mml:EvaluationOrder>1</b2mml:EvaluationOrder>
+				<b2mml:Description>string</b2mml:Description>
+			</b2mml:Link>			
+			<b2mml:Step>
+				<!--!!describes a single instance of use of a recipe element (unit operation, operation, or	phase)-->
+				<!--!!may also correspond to non procedural elements used in procedure diagrams...-->
+				<!--!!such as the Begin and End symbols, and the Allocation and Deallocation symbols.-->
+				<b2mml:ID>S1</b2mml:ID>
+				<b2mml:RecipeElementID>Init</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion />
+				<b2mml:Description>Init</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>S2</b2mml:ID>
+				<b2mml:RecipeElementID>001:d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion />
+				<b2mml:Description>001:Stirring:Duration_Stirring</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>S3</b2mml:ID>
+				<b2mml:RecipeElementID>002:d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion />
+				<b2mml:Description>002:Stirring:Duration_Stirring</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>S4</b2mml:ID>
+				<b2mml:RecipeElementID>003:d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion />
+				<b2mml:Description>003:Stirring:Duration_Stirring</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Step>
+				<b2mml:ID>S5</b2mml:ID>
+				<b2mml:RecipeElementID>End</b2mml:RecipeElementID>
+				<b2mml:RecipeElementVersion />
+				<b2mml:Description>"End of Procedure"</b2mml:Description>
+			</b2mml:Step>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T1</b2mml:ID>
+				<b2mml:Condition>True</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T2</b2mml:ID>
+				<b2mml:Condition>Step 001:Stirring:Duration_Stirring is Completed</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T3</b2mml:ID>
+				<b2mml:Condition>Step 002:Stirring:Duration_Stirring is Completed</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>
+			<b2mml:Transition>
+				<!--!!describes a single instance of a transition -->
+				<b2mml:ID>T4</b2mml:ID>
+				<b2mml:Condition>Step 003:Stirring:Duration_Stirring is Completed</b2mml:Condition>
+				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
+				<!--b2mml:Description>string</b2mml:Description-->
+			</b2mml:Transition>												
+		</b2mml:ProcedureLogic>
+
+		<!--!!Begin and End of procedure can be specified in ElementType-->
+		<b2mml:RecipeElement>
+			<b2mml:ID>Init</b2mml:ID>
+			<b2mml:RecipeElementType>Begin</b2mml:RecipeElementType>
+		</b2mml:RecipeElement>
+		<b2mml:RecipeElement>
+			<b2mml:ID>End</b2mml:ID>
+			<b2mml:RecipeElementType>End</b2mml:RecipeElementType>
+		</b2mml:RecipeElement>
+		<b2mml:RecipeElement>
+			<!--!!ID must be unique and reference the procedure of the HC-->
+			<b2mml:ID>001:d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:ID>
+			<b2mml:Description>Continuous Stirring Procedure</b2mml:Description>
+			<b2mml:RecipeElementType>Operation</b2mml:RecipeElementType>
+			<b2mml:ActualEquipmentID>HC30Instance</b2mml:ActualEquipmentID>
+			<b2mml:EquipmentRequirement>
+				<b2mml:ID>Equipment Requirement for the HCs</b2mml:ID>
+			</b2mml:EquipmentRequirement>
+			<b2mml:Parameter>
+				<b2mml:ID>001:39c48383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+			</b2mml:Parameter>
+		</b2mml:RecipeElement>
+        <b2mml:RecipeElement>
+			<!--!!ID must be unique and reference the procedure of the HC-->
+			<b2mml:ID>002:d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:ID>
+			<b2mml:Description>Continuous Stirring Procedure</b2mml:Description>
+			<b2mml:RecipeElementType>Operation</b2mml:RecipeElementType>
+			<b2mml:ActualEquipmentID>HC30Instance</b2mml:ActualEquipmentID>
+			<b2mml:EquipmentRequirement>
+				<b2mml:ID>Equipment Requirement for the HCs</b2mml:ID>
+			</b2mml:EquipmentRequirement>
+			<b2mml:Parameter>
+				<b2mml:ID>002:39c48383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+			</b2mml:Parameter>
+		</b2mml:RecipeElement>
+        <b2mml:RecipeElement>
+			<!--!!ID must be unique and reference the procedure of the HC-->
+			<b2mml:ID>003:d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:ID>
+			<b2mml:Description>Continuous Stirring Procedure</b2mml:Description>
+			<b2mml:RecipeElementType>Operation</b2mml:RecipeElementType>
+			<b2mml:ActualEquipmentID>HC30Instance</b2mml:ActualEquipmentID>
+			<b2mml:EquipmentRequirement>
+				<b2mml:ID>Equipment Requirement for the HCs</b2mml:ID>
+			</b2mml:EquipmentRequirement>
+			<b2mml:Parameter>
+				<b2mml:ID>003:39c48383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+			</b2mml:Parameter>
+		</b2mml:RecipeElement>
+		<!--b2mml:OtherInformation></b2mml:OtherInformation-->
+	</b2mml:MasterRecipe>
+
+	<!--b2mml:ControlRecipe>
+		<b2mml:ID></b2mml:ID>
+	</b2mml:ControlRecipe-->
+
+	<b2mml:EquipmentElement>
+		<b2mml:ID>HC30Instance</b2mml:ID>
+		<b2mml:EquipmentElementType>Other</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementLevel>EquipmentModule</b2mml:EquipmentElementLevel>
+		<!--b2mml:ClassInstanceAssociation>
+			<b2mml:ClassEquipmentID>HC10Class</b2mml:ClassEquipmentID>
+			<b2mml:MemberEquipmentID>HC10Instance</b2mml:MemberEquipmentID>
+		</b2mml:ClassInstanceAssociation-->
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>d0992f3e-6c5b-4b85-867a-b669c5fa452b</b2mml:ID>
+			<b2mml:Description>HC30:Stirring:Procedure_2</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+			<b2mml:Parameter>
+				<b2mml:ID>383-fa88-4ffe-9c82-b40d69462cf9</b2mml:ID>
+				<b2mml:Description>Time_Stirring</b2mml:Description>
+				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
+				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
+				<b2mml:Value>
+					<b2mml:ValueString>6</b2mml:ValueString>
+					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
+					<b2mml:DataType>duration</b2mml:DataType>
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
+				</b2mml:Value>
+			</b2mml:Parameter>
+		</b2mml:EquipmentProceduralElement>
+		<b2mml:EquipmentProceduralElement>
+			<b2mml:ID>da03d3d0-713e-470b-bb1c-aa65fabc93f9</b2mml:ID>
+			<b2mml:Description>HC10:Stirring:Procedure_1</b2mml:Description>			
+			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
+		</b2mml:EquipmentProceduralElement>		
+		<b2mml:EquipmentConnection>
+			<b2mml:ID>EquipmentConnectionHC10toHC20</b2mml:ID>
+			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
+			<b2mml:FromEquipmentID>HC10Instance</b2mml:FromEquipmentID>
+			<b2mml:ToEquipmentID>HC20Instance</b2mml:ToEquipmentID>
+		</b2mml:EquipmentConnection>
+	</b2mml:EquipmentElement>
+
+	<b2mml:EquipmentElement>
+		<b2mml:ID></b2mml:ID>
+		<b2mml:EquipmentElementType>Element</b2mml:EquipmentElementType>
+		<b2mml:EquipmentElementLevel>ProcessCell</b2mml:EquipmentElementLevel>
+		<b2mml:EquipmentConnection>
+			<b2mml:ID>EquipmentConnectionHC30toHC10</b2mml:ID>
+			<b2mml:ConnectionType>MaterialMovement</b2mml:ConnectionType>
+			<b2mml:FromEquipmentID>HC30Instance</b2mml:FromEquipmentID>
+			<b2mml:ToEquipmentID>HC10Instance</b2mml:ToEquipmentID>
+		</b2mml:EquipmentConnection>
+	</b2mml:EquipmentElement>
+
+
+	<!--b2mml:BatchList>
+		<b2mml:BatchListEntry>
+			<b2mml:ID>normalizedString</b2mml:ID>
+			<b2mml:BatchListEntryType>Campaign</b2mml:BatchListEntryType>
+		</b2mml:BatchListEntry>
+	</b2mml:BatchList-->
+	<!--b2mml:EnumerationSet></b2mml:EnumerationSet-->
+</b2mml:BatchInformation>
