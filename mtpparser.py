@@ -4,7 +4,7 @@ from defusedxml.ElementTree import parse
 TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
 TESTMTP2 = r"Artefakte\HC20_manifest.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
-TESTMTPS = [TESTMTP1] 
+TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3] 
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
@@ -153,6 +153,7 @@ class Pea:
         self.procs = [] # list of procedures
         self.servs = [] # list of services
         self.url = "" # address of the opc ua server
+        self.ns = "" # namespace of the opc ua server
         self.nsid = None # index of the opc namespace
 
     def __str__(self):
@@ -1815,7 +1816,9 @@ for file in TESTMTPS:
                                 mtp.addInstance(inst)
                         elif node.get("Name") == "SourceList" or node.get("Name") == "Sources":
                             # parse url
-                            mtp.addUrl(url=node.findtext(f".//*[@Name='Endpoint']/{NAMESPACE}Value"))                            
+                            mtp.addUrl(url=node.findtext(f".//*[@Name='Endpoint']/{NAMESPACE}Value"))
+                            # parse namespace
+                            mtp.ns = node.findtext(f".//*[@Name='Namespace']/{NAMESPACE}Value")
 
         elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Services":
             for gchild in child:
@@ -1908,12 +1911,12 @@ for file in TESTMTPS:
 #             print("    ", pa.name, pa.id, pa.default, pa.unit)
 #     print("\n")
 
-print("Services: ")
-for s in mtp.servs:
-    print(s.name)
-print("\n", "Procedures: ")
-for p in mtp.procs:
-    print(p.name)
-print("\n", "Sensors and Actuators: ")
-for sa in mtp.sensacts:
-    print(sa.name)
+# print("Services: ")
+# for s in mtp.servs:
+#     print(s.name)
+# print("\n", "Procedures: ")
+# for p in mtp.procs:
+#     print(p.name)
+# print("\n", "Sensors and Actuators: ")
+# for sa in mtp.sensacts:
+#     print(sa.name)
