@@ -357,7 +357,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -369,7 +369,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -439,7 +439,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -456,7 +456,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -468,7 +468,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -480,7 +480,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -497,7 +497,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -519,7 +519,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -565,7 +565,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -587,7 +587,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -604,7 +604,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -626,7 +626,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -643,7 +643,7 @@
 					<b2mml:ValueString>1</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -655,7 +655,7 @@
 					<b2mml:ValueString>1</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -684,7 +684,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -713,7 +713,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
             <b2mml:Parameter>
@@ -759,7 +759,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
@@ -776,7 +776,7 @@
 					<b2mml:ValueString>25</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<!--b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure-->
+					<b2mml:UnitOfMeasure>second</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>

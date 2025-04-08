@@ -4,7 +4,7 @@ from defusedxml.ElementTree import parse
 TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
 TESTMTP2 = r"Artefakte\HC20_manifest.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
-TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3] 
+TESTMTPS = [TESTMTP2] 
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
@@ -30,6 +30,7 @@ class Instance:
                           'CommandEn': {'Type': 'DWORD', 'ID': None, 'Default': None},
                           'ProcedureCur': {'Type': 'DWORD', 'ID': None, 'Default': None},
                           'ProcedureReq': {'Type': 'DWORD', 'ID': None, 'Default': None},
+                          'Pos': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'PosTextID': {'Type': 'DWORD', 'ID': None, 'Default': None},
                           'InteractQuestionID': {'Type': 'DWORD', 'ID': None, 'Default': None},
                           'InteractAnswerID': {'Type': 'DWORD', 'ID': None, 'Default': None},
@@ -66,6 +67,8 @@ class Instance:
                           'ConfigParamApplyOp': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'ConfigParamApplyInt': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'ReportValueFreeze': {'Type': 'BOOL', 'ID': None, 'Default': None},
+                          'Ctrl': {'Type': 'REAL', 'ID': None, 'Default': None},
+                          'V': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VExt': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VOp': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VInt': {'Type': 'REAL', 'ID': None, 'Default': None},
@@ -1782,6 +1785,21 @@ for file in TESTMTPS:
                                         id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
                                         inst.paramElem['VOut']['ID'] = id
                                         inst.paramElem['VOut']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                    elif attrNode.get("Name") == "V":
+                                        elemNode = attrNode.findtext(f"{NAMESPACE}Value")
+                                        id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
+                                        inst.paramElem['V']['ID'] = id
+                                        inst.paramElem['V']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                    elif attrNode.get("Name") == "Pos":
+                                        elemNode = attrNode.findtext(f"{NAMESPACE}Value")
+                                        id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
+                                        inst.paramElem['Pos']['ID'] = id
+                                        inst.paramElem['Pos']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                    elif attrNode.get("Name") == "Ctrl":
+                                        elemNode = attrNode.findtext(f"{NAMESPACE}Value")
+                                        id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
+                                        inst.paramElem['Ctrl']['ID'] = id
+                                        inst.paramElem['Ctrl']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
                                     elif attrNode.get("Name") == "VSclMin":
                                         elemNode = attrNode.findtext(f"{NAMESPACE}Value")
                                         id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
@@ -1919,4 +1937,11 @@ for file in TESTMTPS:
 #     print(p.name)
 # print("\n", "Sensors and Actuators: ")
 # for sa in mtp.sensacts:
-#     print(sa.name)
+#     if sa.paramElem["V"]["ID"] is not None:
+#         print(sa.name, sa.paramElem["V"]["ID"])
+#     elif sa.paramElem["VOut"]["ID"] is not None:
+#         print(sa.name, sa.paramElem["VOut"]["ID"])
+#     elif sa.paramElem["Pos"]["ID"] is not None:
+#         print(sa.name, sa.paramElem["Pos"]["ID"])
+#     elif sa.paramElem["Ctrl"]["ID"] is not None:
+#         print(sa.name, sa.paramElem["Ctrl"]["ID"])

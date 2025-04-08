@@ -63,6 +63,15 @@ def getStateByEncoding(code:int) -> str:
         case 131072:
             return "Completed"
 
+async def getNamespaceId(opcurl:str, ns:str) -> int:
+    client = Client(url=opcurl)
+    if opcurl == "opc.tcp://192.168.0.20:4840":
+        client.set_user("admin")
+        client.set_password("4b778d7a")
+    async with client:
+        nsid = await client.get_namespace_index(uri=ns)
+        return nsid
+
 async def getNamespace(opcurl:str) -> str:
     async with Client(url=opcurl) as client:
             ns = None
@@ -225,7 +234,14 @@ def statusMonitoring(pea:mtp.Pea, url:str, idx:str) -> list[dict]:
         statuses.append({"Name": s.name, "ID": s.refid, "Status": getStateByEncoding(code=checkCurrentState(opcurl=url, nsIndex=idx, service=s))})
 
     for sa in pea.sensacts:
-        statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["VOut"]["ID"]))})
+        if sa.paramElem["V"]["ID"] is not None:
+            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["V"]["ID"]))})
+        elif sa.paramElem["VOut"]["ID"] is not None:
+            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["VOut"]["ID"]))})
+        elif sa.paramElem["Pos"]["ID"] is not None:
+            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Pos"]["ID"]))})
+        elif sa.paramElem["Ctrl"]["ID"] is not None:
+            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Ctrl"]["ID"]))})
 
     return statuses
 
@@ -271,43 +287,48 @@ def main():
                         global ns
                         if url != p['mtp'].url:
                             url = p['mtp'].url
-                            ns = asyncio.run(getNamespace(opcurl=url))
+                            ns = p['mtp'].ns
+                            nsid = asyncio.run(getNamespaceId(opcurl=url, ns=ns))
+                            #ns = asyncio.run(getNamespace(opcurl=url))
                         service = p['mtp'].getService(p['inst'].serviceId)
                         procedure = p['inst']
                         params = p['params']
 
                         # set service to automatic mode
-                        setOperationMode(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                        setOperationMode(opcurl=url, mode="aut", nsIndex=nsid, service=service)
                         # check if mode has been set
                         while(True):
-                            if checkOperatorMode(opcurl=url, nsIndex=ns, service=service):
+                            if checkAutomaticMode(opcurl=url, nsIndex=nsid, service=service):
                                 break
                         
                         # set procedure
-                        setProcedure(opcurl=url, mode="aut", nsIndex=ns, service=service, procId=procedure.procId)
+                        setProcedure(opcurl=url, mode="aut", nsIndex=nsid, service=service, procId=procedure.procId)
 
                         # set paramaters
                         for par in params:
-                            changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, service=service, param=par[0], value=int(par[1]))
+                            changeParameterValue(opcurl=url, mode="aut", nsIndex=nsid, service=service, param=par[0], value=int(par[1]))
 
                         # check current State
-                        currState = checkCurrentState(opcurl=url, nsIndex=ns, service=service)
+                        currState = checkCurrentState(opcurl=url, nsIndex=nsid, service=service)
 
                         if currState == 16:
                             # idle, start service
-                            startService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                            startService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
                         elif currState == 512:
                             # aborted, abort
                             return
                         elif currState == 4:
                             # stopped, abort
                             return
+                        
+                        # short sleep
+                        time.sleep(0.5)
 
                         # status monitoring
-                        statuses = statusMonitoring(pea=p['mtp'], url=url, idx=ns)
+                        statuses = statusMonitoring(pea=p['mtp'], url=url, idx=nsid)
 
                         for s in statuses:
-                            if "Status" in s.keys:
+                            if "Status" in s:
                                 print(f"Name: {s['Name']}, Status: {s['Status']}")
                             else:
                                 print(f"Name: {s['Name']}, Current Value: {s['CurrVal']}")
@@ -372,158 +393,54 @@ def main():
                         # check step state
                         if value == "Idle":
                             while(True):
-                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 16:
+                                if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 16:
                                     break
                         elif value == "Paused":
                             while(True):
-                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 32:
+                                if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 32:
                                     break
                         elif value == "Held":
                             while(True):
-                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 2048:
+                                if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 2048:
                                     break
                         elif value == "Completed":
                             while(True):
-                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 131072:
+                                if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 131072:
                                     break
-                                elif checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 32:
+                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 32:
                                     # resume
-                                    resumeService(opcurl=url, mode="aut", nsIndex=ns, service=service)
-                                elif checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 2048:
+                                    resumeService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 2048:
                                     # unhold
-                                    unholdService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                                    unholdService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
                             # reset state
-                            resetService(opcurl=url, mode="aut", nsIndex=ns, service=service)
+                            resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
 
                             # set all parameters to default
                             params = []
                             for par in step['inst'].params:
-                                changeParameterValue(opcurl=url, mode="aut", nsIndex=ns, service=service, param=par, value=int(par.default))
+                                changeParameterValue(opcurl=url, mode="aut", nsIndex=nsid, service=service, param=par, value=int(par.default))
                         elif value == "Stopped":
                             while(True):
-                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 4:
+                                if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 4:
                                     break
                         elif value == "Aborted":
                             while(True):
-                                if checkCurrentState(opcurl=url, nsIndex=ns, service=service) == 512:
+                                if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 512:
                                     break
-
-
-async def main2():
-
-    print(f"Connecting to {url} ...")
-    async with Client(url=url) as client:
-        # Find the namespace index
-        # nsidx = await client.get_namespace_index(namespace)
-        nsid, nsidx = await client.get_namespace_array()
-        #print(f"Namespace Index for '{namespace}': {nsidx}")
-
-        # check state of dosing
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.StateCur")
-        val = await node.read_value()
-        if val == 131072:
-            # Reset
-            node = client.get_node("ns=4;s=GVL_MTP.Dosing.CommandExt")
-            dv = ua.DataValue(ua.Variant([2], ua.VariantType.UInt32))
-            await node.set_data_value(dv)
-        # Turn off operator mode
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.StateOffOp")
-        dv = ua.DataValue(ua.Variant([True], ua.VariantType.Boolean))
-        await node.set_data_value(dv)
-        time.sleep(1)
-        # Start automatic mode
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.StateAutOp")
-        dv = ua.DataValue(ua.Variant([True], ua.VariantType.Boolean))
-        await node.set_data_value(dv)
-        # Set procedure value VExt
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.Param_Dosing_Duration.VExt")
-        dv = ua.DataValue(ua.Variant([7], ua.VariantType.Int32))
-        await node.set_data_value(dv)
-        # Set procedure
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.ProcedureExt")
-        dv = ua.DataValue(ua.Variant([2], ua.VariantType.UInt32))
-        await node.set_data_value(dv)
-        # Apply parameter changes
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.ProcParamApplyExt")
-        dv = ua.DataValue(ua.Variant([True], ua.VariantType.Boolean))
-        await node.set_data_value(dv)
-        # Start procedure
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.CommandExt")
-        dv = ua.DataValue(ua.Variant([4], ua.VariantType.UInt32))
-        await node.set_data_value(dv)
-        # read current state
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.StateCur")
-        val = await node.read_value()
-        while (val != 131072):
-            val = await node.read_value()
-        # Reset
-        node = client.get_node("ns=4;s=GVL_MTP.Dosing.CommandExt")
-        dv = ua.DataValue(ua.Variant([2], ua.VariantType.UInt32))
-        await node.set_data_value(dv)
-
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.StateCur")
-        val = await node.read_value()
-        if val == 131072:
-            # Reset
-            node = client.get_node("ns=4;s=GVL_MTP.Stirring.CommandExt")
-            dv = ua.DataValue(ua.Variant([2], ua.VariantType.UInt32))
-            await node.set_data_value(dv)
-        # Turn off operator mode
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.StateOffOp")
-        dv = ua.DataValue(ua.Variant([True], ua.VariantType.Boolean))
-        await node.set_data_value(dv)
-        time.sleep(1)
-        # Start automatic mode
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.StateAutOp")
-        dv = ua.DataValue(ua.Variant([True], ua.VariantType.Boolean))
-        await node.set_data_value(dv)
-        # Set procedure value VExt
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.Param_Stirring_Duration.VExt")
-        dv = ua.DataValue(ua.Variant([5], ua.VariantType.Int32))
-        await node.set_data_value(dv)
-        # Set procedure
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.ProcedureExt")
-        dv = ua.DataValue(ua.Variant([2], ua.VariantType.UInt32))
-        await node.set_data_value(dv)
-        # Apply parameter changes
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.ProcParamApplyExt")
-        dv = ua.DataValue(ua.Variant([True], ua.VariantType.Boolean))
-        await node.set_data_value(dv)
-        # Start procedure
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.CommandExt")
-        dv = ua.DataValue(ua.Variant([4], ua.VariantType.UInt32))
-        await node.set_data_value(dv)
-        # read current state
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.StateCur")
-        val = await node.read_value()
-        while (val != 131072):
-            val = await node.read_value()
-        # Reset
-        node = client.get_node("ns=4;s=GVL_MTP.Stirring.CommandExt")
-        dv = ua.DataValue(ua.Variant([2], ua.VariantType.UInt32))
-        await node.set_data_value(dv)
-        # val = await node.read_value()
-        # print(f"Current State: {val}")
-
-        # new_value = value - 50
-        # print(f"Setting value of MyVariable to {new_value} ...")
-        # await var.write_value(new_value)
-
-        # # Calling a method
-        # res = await client.nodes.objects.call_method(f"{nsidx}:ServerMethod", 5)
-        # print(f"Calling ServerMethod returned {res}")
 
 ### main
 if __name__ == "__main__":
-    service = pea.getService(id="fdc6b3c7-e28a-46fb-8d21-2f4cc584c788")
-    proc = service.procs[1]
-    param = proc.params[0]
-    url = "opc.tcp://192.168.0.10:4840"
+    # service = pea.getService(id="fdc6b3c7-e28a-46fb-8d21-2f4cc584c788")
+    # proc = service.procs[1]
+    # param = proc.params[0]
+    url = "opc.tcp://192.168.0.20:4840"
+    print(asyncio.run(getNamespaceId(opcurl=url, ns=pea.ns)))
 
-    setOperationMode(opcurl=url, mode="op", nsIndex=4, service=service)
-    changeParameterValue(opcurl=url, mode="op", nsIndex=4, service=service, param=param, value=5)
-    setProcedure(opcurl=url, mode="op", nsIndex=4, service=service, procId=2)
-    startService(opcurl=url, mode="op", nsIndex=4, service=service)
+    # setOperationMode(opcurl=url, mode="op", nsIndex=4, service=service)
+    # changeParameterValue(opcurl=url, mode="op", nsIndex=4, service=service, param=param, value=5)
+    # setProcedure(opcurl=url, mode="op", nsIndex=4, service=service, procId=2)
+    # startService(opcurl=url, mode="op", nsIndex=4, service=service)
 
     # setOperationMode(opcurl=url, mode="aut", nsIndex=4, service=service)
     # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
@@ -534,4 +451,4 @@ if __name__ == "__main__":
     # startService(opcurl=url, mode="aut", nsIndex=4, service=service)
     # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
     
-    #main()
+    # main()
