@@ -4,7 +4,7 @@ from defusedxml.ElementTree import parse
 TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
 TESTMTP2 = r"Artefakte\HC20_manifest.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
-TESTMTPS = [TESTMTP2] 
+TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3] 
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes

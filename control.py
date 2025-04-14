@@ -434,8 +434,8 @@ if __name__ == "__main__":
     # service = pea.getService(id="fdc6b3c7-e28a-46fb-8d21-2f4cc584c788")
     # proc = service.procs[1]
     # param = proc.params[0]
-    url = "opc.tcp://192.168.0.20:4840"
-    print(asyncio.run(getNamespaceId(opcurl=url, ns=pea.ns)))
+    # url = "opc.tcp://192.168.0.20:4840"
+    # print(asyncio.run(getNamespaceId(opcurl=url, ns=pea.ns)))
 
     # setOperationMode(opcurl=url, mode="op", nsIndex=4, service=service)
     # changeParameterValue(opcurl=url, mode="op", nsIndex=4, service=service, param=param, value=5)
@@ -451,4 +451,4 @@ if __name__ == "__main__":
     # startService(opcurl=url, mode="aut", nsIndex=4, service=service)
     # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
     
-    # main()
+    main()

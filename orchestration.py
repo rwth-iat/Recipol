@@ -102,7 +102,7 @@ for elem in bml.sortedList:
 #         for pp in p:
 #             if type(pp) is dict:
 #                 if pp['inst'] is not None:
-#                     print(f"BML: {pp['bml'].getName()}, MTP: {pp['inst'].name}")
+#                     print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].name}")
 #                 else:
 #                     print(f"BML: {pp['bml'].getName()}, None")
 #             else:
@@ -110,7 +110,7 @@ for elem in bml.sortedList:
 #     else:
 #         if type(p) is dict:
 #             if p['inst'] is not None:
-#                 print(f"BML: {p['bml'].getName()}, MTP: {p['inst'].name}")
+#                 print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
 #             else:
 #                 print(f"BML: {p['bml'].getName()}, None")
 #         else:
