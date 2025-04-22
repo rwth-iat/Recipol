@@ -4,6 +4,7 @@ import time
 import orchestration as oc
 from typing import Any
 import mtpparser as mtp
+import csv
 
 ### static variables
 #url = "opc.tcp://192.168.0.10:4840"
@@ -228,44 +229,56 @@ def checkCurrentState(opcurl:str, nsIndex:str, service:mtp.Service) -> int:
 
 def statusMonitoring(pea:mtp.Pea, url:str, idx:str) -> list[dict]:
     # gives an overview of the statuses of the services, sensors and actuators of the current pea
-    statuses = []
+    statuses = [{"Name": "Time", "Value": time.localtime()}]
 
     for s in pea.servs:
-        statuses.append({"Name": s.name, "ID": s.refid, "Status": getStateByEncoding(code=checkCurrentState(opcurl=url, nsIndex=idx, service=s))})
+        statuses.append({"Name": s.name, "ID": s.refid, "Value": getStateByEncoding(code=checkCurrentState(opcurl=url, nsIndex=idx, service=s))})
 
     for sa in pea.sensacts:
         if sa.paramElem["V"]["ID"] is not None:
-            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["V"]["ID"]))})
+            statuses.append({"Name": sa.name, "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["V"]["ID"]))})
         elif sa.paramElem["VOut"]["ID"] is not None:
-            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["VOut"]["ID"]))})
+            statuses.append({"Name": sa.name, "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["VOut"]["ID"]))})
         elif sa.paramElem["Pos"]["ID"] is not None:
-            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Pos"]["ID"]))})
+            statuses.append({"Name": sa.name, "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Pos"]["ID"]))})
         elif sa.paramElem["Ctrl"]["ID"] is not None:
-            statuses.append({"Name": sa.name, "ID": sa.id, "CurrVal": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Ctrl"]["ID"]))})
+            statuses.append({"Name": sa.name, "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Ctrl"]["ID"]))})
 
     return statuses
 
 def main():
     matFlag = True
+    mtps:list[mtp.Pea] = []
     # preliminary check for material requirements
-    # for p in proc:
-    #     if type(p) is list:
-    #         if type(p[0]) is dict:
-    #             # step in a parallel function
-    #             pass
-    #     else:
-    #         if type(p) is dict:
-    #             # simple step
-    #             for r in p['bml'].reqs:
-    #                 if "Material" in r.const:
-    #                     # check by operator
-    #                     material = r.const[r.const.rfind("=")+1:]
-    #                     ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
-    #                     if ack.lower() == "y":
-    #                         continue
-    #                     else:
-    #                         matFlag = False
-    #                         break
+    for p in proc:
+        if type(p) is list:
+            if type(p[0]) is dict:
+                # step in a parallel function
+                pass
+        else:
+            if type(p) is dict:
+                # simple step
+                if p["mtp"] not in mtps:
+                    mtps.append(p["mtp"])
+                for r in p['bml'].reqs:
+                    if "Material" in r.const:
+                        # check by operator
+                        material = r.const[r.const.rfind("=")+1:]
+                        ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
+                        if ack.lower() == "y":
+                            continue
+                        else:
+                            matFlag = False
+                            break
+
+    # create list of headers
+    headers:list[str] = ["Time"]
+    for m in mtps:
+        for s in m.servs:
+            headers.append(s.name)
+        for sa in m.sensacts:
+            headers.append(sa.name)
+    
     if matFlag:
         for p in proc:
             if type(p) is list:
@@ -288,7 +301,9 @@ def main():
                         if url != p['mtp'].url:
                             url = p['mtp'].url
                             ns = p['mtp'].ns
-                            nsid = asyncio.run(getNamespaceId(opcurl=url, ns=ns))
+                            if p["mtp"].nsid is None:
+                                p["mtp"].nsid = asyncio.run(getNamespaceId(opcurl=url, ns=ns))
+                            nsid = p["mtp"].nsid
                             #ns = asyncio.run(getNamespace(opcurl=url))
                         service = p['mtp'].getService(p['inst'].serviceId)
                         procedure = p['inst']
@@ -325,13 +340,23 @@ def main():
                         time.sleep(0.5)
 
                         # status monitoring
-                        statuses = statusMonitoring(pea=p['mtp'], url=url, idx=nsid)
+                        statuses = statusMonitoring(pea=mtps, url=url, idx=nsid)
 
-                        for s in statuses:
-                            if "Status" in s:
-                                print(f"Name: {s['Name']}, Status: {s['Status']}")
-                            else:
-                                print(f"Name: {s['Name']}, Current Value: {s['CurrVal']}")
+                        with open('DataHistory.csv', 'w', newline='') as csvfile:
+                            reader = csv.reader(csvfile)
+                            writer = csv.writer(csvfile)
+                            rowToWrite = []
+                            if len(list(reader)) == 0:
+                                writer.writerow(headers)
+                            for head in headers:
+                                rowToWrite.append(statuses[head])
+                            writer.writerow(rowToWrite)
+
+                        # for s in statuses:
+                        #     if "Status" in s:
+                        #         print(f"Name: {s['Name']}, Status: {s['Status']}")
+                        #     else:
+                        #         print(f"Name: {s['Name']}, Current Value: {s['CurrVal']}")
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
