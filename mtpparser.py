@@ -1921,13 +1921,13 @@ for file in TESTMTPS:
         if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
             mtp.sensacts.append(i)
 
-# for s in mtp.servs:
-#     print(s.name)
-#     for p in s.procs:
-#         print("  ", p.name, p.id)
-#         for pa in p.params:
-#             print("    ", pa.name, pa.id, pa.default, pa.unit)
-#     print("\n")
+for s in mtp.servs:
+    print(s.name)
+    for p in s.procs:
+        print("  ", p.name, p.id)
+        for pa in p.params:
+            print("    ", pa.name, pa.id, pa.default, pa.unit)
+    print("\n")
 
 # print("Services: ")
 # for s in mtp.servs:
