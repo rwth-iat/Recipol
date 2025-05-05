@@ -2,9 +2,9 @@ from defusedxml.ElementTree import parse
 
 ### static variables
 TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
-TESTMTP2 = r"Artefakte\HC20_manifest.aml"
+TESTMTP2 = r"Artefakte\HC2040_new_new.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
-TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3] 
+TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3]
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes
@@ -85,11 +85,11 @@ class Instance:
         descr = f"NAME: {self.name}, ID={self.id}"
         descr += f"\n    Min: {self.min}, Max: {self.max}, Unit: {self.unit}"
         return descr
-    
+
     def addRefId(self, refId: str):
         """Adds a refID to the instance"""
         self.refid = refId
-    
+
     def addMin(self, minVal:float):
         """Adds a low limit value"""
         self.min = minVal
@@ -120,7 +120,7 @@ class Procedure:
         descr += f"\n   Parameter: {self.params}"
         descr += f"\n   Self Completing: {self.compl}"
         return descr
-    
+
     def addParameter(self, param:Instance) -> None:
         """Adds a parameter to the procedure"""
         self.params.append(param)
@@ -130,7 +130,7 @@ class Procedure:
         for p in self.params:
             if p.id == id:
                 return p
-            
+
         return None
 
     def setSelfCompleting(self, complFlag:bool) -> None:
@@ -150,7 +150,7 @@ class Service:
 
 class Pea:
     def __init__(self):
-        self.name = "" # name of the mtp 
+        self.name = "" # name of the mtp
         self.insts = [] # list of instances
         self.sensacts = [] # list of sensors and actuators
         self.procs = [] # list of procedures
@@ -181,15 +181,15 @@ class Pea:
         for i in self.insts:
             if i.id == instId or i.refid == instId:
                 return True
-            
+
         return False
-    
+
     def getInstance(self, instId:str) -> Instance:
         """Returns the instance with the given id"""
         for i in self.insts:
             if i.id == instId or i.refid == instId:
                 return i
-            
+
         return None
 
     def addService(self, serv:Service) -> None:
@@ -210,13 +210,13 @@ class Pea:
     def getUrl(self) -> str:
         """Returns the url of the opc ua server"""
         return self.url
-    
+
     def getService(self, id:str) -> Service:
         """Returns the service with the specified id"""
         for s in self.servs:
             if s.id == id:
                 return s
-            
+
         return None
 
     def getProcedure(self, procId:str) -> Procedure:
@@ -225,14 +225,14 @@ class Pea:
             if p.id == procId:
                 return p
         return None
-    
+
     def hasProcedure(self, procId:str) -> bool:
         """Returns true if mtp has specified procedure."""
         for p in self.procs:
             if p.id == procId:
                 return True
         return False
-    
+
     def hasParameter(self, paramId:str) -> bool:
         """Returns true if there is a parameter with the specified id."""
         for p in self.procs:
@@ -529,7 +529,7 @@ def getUnit(unitNr: int) -> str:
             return "Atmosphären"
         case 1141:
             return "Pfund pro Quadratzoll"
-        case 1142: 
+        case 1142:
             return "Pfund pro quadratinch (absolut)"
         case 1143:
             return "Pfund pro quadratinch (gauge)"
@@ -663,7 +663,7 @@ def getUnit(unitNr: int) -> str:
             return "Megajoule pro Kilogramm"
         case 1208:
             return "Kilojoule pro Kilogramm"
-        case 1209: 
+        case 1209:
             return "Ampere"
         case 1210:
             return "Kiloampere"
@@ -929,7 +929,7 @@ def getUnit(unitNr: int) -> str:
             return "Britische Tonnen pro Stunde"
         case 1341:
             return "Britische Tonnen pro Tag"
-        case 1342: 
+        case 1342:
             return "Prozent"
         case 1343:
             return "Prozent Feststoffe pro Gewichtseinheit"
@@ -1481,7 +1481,7 @@ def getUnit(unitNr: int) -> str:
             return "Maßeinheit nicht bekannt"
         case 1999:
             return "spezial"
-        
+
 
 ### start main
 mtps:list[Pea] = []
@@ -1882,7 +1882,7 @@ for file in TESTMTPS:
                             'StateOpAct',
                             'StateOpAut',
                             'StateOpOp']
-                    
+
                     inst = mtp.getInstance(instId=gchild.findtext(f"./{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value"))
                     serv = Service()
                     serv.name = gchild.get("Name") # name of the service
@@ -1906,7 +1906,7 @@ for file in TESTMTPS:
                                 if paramNode.tag == f"{NAMESPACE}InternalElement":
                                     for refNode in paramNode.iter(f"{NAMESPACE}Attribute"):
                                         if refNode.get("Name") == "RefID" and mtp.hasInstance(refNode.findtext(f"{NAMESPACE}Value")):
-                                            # get the instance the procedure refers to 
+                                            # get the instance the procedure refers to
                                             procParam = mtp.getInstance(refNode.findtext(f"{NAMESPACE}Value"))
 
                                             # add the instance to the procedure's params
@@ -1921,13 +1921,13 @@ for file in TESTMTPS:
         if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
             mtp.sensacts.append(i)
 
-for s in mtp.servs:
-    print(s.name)
-    for p in s.procs:
-        print("  ", p.name, p.id)
-        for pa in p.params:
-            print("    ", pa.name, pa.id, pa.default, pa.unit)
-    print("\n")
+    # for s in mtp.servs:
+    #     print(s.name, s.id)
+    #     for p in s.procs:
+    #         print("  ", p.name, p.id)
+    #         for pa in p.params:
+    #             print("    ", pa.name, pa.id, pa.default, pa.unit)
+    #     print("\n")
 
 # print("Services: ")
 # for s in mtp.servs:

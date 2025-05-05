@@ -10,6 +10,7 @@ TESTXML10 = r"Artefakte\Wabe10_Grundrezept.xml"
 TESTXML20 = r"Artefakte\Wabe20_Grundrezept.xml"
 TESTXML30 = r"Artefakte\Wabe30_Grundrezept.xml"
 TESTXMLALL = r"Artefakte\Wabe102030_Grundrezept.xml"
+TESTKURZ = r"Artefakte\Testrezept kur.xml"
 SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 

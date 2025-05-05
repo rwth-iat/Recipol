@@ -40,7 +40,10 @@ for elem in bml.sortedList:
                         params.append((mParam, p.value))                        
             
             # add tuple
-            procedure.append({'bml': elem, 'mtp': thisMtp, 'inst': mInst, 'params': params})
+            if elemId == "Init" or elemId == "End":
+                procedure.append({'bml':elem, 'mtp':None, 'inst':mInst, 'params':params})
+            else:
+                procedure.append({'bml': elem, 'mtp': thisMtp, 'inst': mInst, 'params': params})
         else:
             # we don't have to match transitions to anything, simpy add
             procedure.append(elem)
@@ -59,12 +62,18 @@ for elem in bml.sortedList:
                     if mInst is not None:
                         break
                 
-                sl.append({'bml': e, 'mtp': thisMtp, 'inst': mInst})
+                if e.getName() == "Init" or e.getName() == "End of Procedure":
+                    sl.append({'bml':e, 'mtp':None, 'inst':mInst})
+                else:
+                    sl.append({'bml': e, 'mtp': thisMtp, 'inst': mInst})
             else:
                 # we don't have to match transitions to anything, simpy add
                 sl.append(e)
         # add sublist to procedure
         procedure.append(sl)
+
+def getProcedure() -> list[{dict}]:
+    return procedure
 
 # user check before continuation
 # for p in procedure:
@@ -109,7 +118,7 @@ for elem in bml.sortedList:
 #                 print(f"TRANS: {pp.getName()}")
 #     else:
 #         if type(p) is dict:
-#             if p['inst'] is not None:
+#             if p['mtp'] is not None:
 #                 print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
 #             else:
 #                 print(f"BML: {p['bml'].getName()}, None")
