@@ -10,7 +10,6 @@ TESTXML10 = r"Artefakte\Wabe10_Grundrezept.xml"
 TESTXML20 = r"Artefakte\Wabe20_Grundrezept.xml"
 TESTXML30 = r"Artefakte\Wabe30_Grundrezept.xml"
 TESTXMLALL = r"Artefakte\Wabe102030_Grundrezept.xml"
-TESTKURZ = r"Artefakte\Testrezept kur.xml"
 SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
@@ -269,7 +268,7 @@ class Bml:
     def getElement(self, eID:str) -> Element | None:
         """Returns the element if it exists, otherwise None."""
         for e in self.elems:
-            if e.id == eID:
+            if e.id == eID or eID in e.id:
                 return e
             
         return None
@@ -313,9 +312,18 @@ class Bml:
                 return p
             
         return None
+    
+    def getProcedure(self, procId) -> Procedure | None:
+        """Returns the procedure if it exists, otherwise None."""
+        for r in self.res:
+            for p in r.skills:
+                if p.id == procId:
+                    return p
+                
+        return None
 
 ### functions
-def parseMasterRecipe(node):
+def parseMasterRecipe(bml:Bml, node):
     for child in node:
         if child.tag == f"{NAMESPACE}EquipmentRequirement":
             # create requirement object
@@ -460,8 +468,8 @@ def parseMasterRecipe(node):
                         # add param to element
                         thisElem.addParameter(param)
 
-def parseResource(node):
-    if node.findtext(f"{NAMESPACE}EquipmentElementType") == "Instance":
+def parseResource(bml:Bml, node):
+    if node.findtext(f"{NAMESPACE}EquipmentElementType") == "Other":
         # get the instance
         resId = node.findtext(f"{NAMESPACE}ID")
         thisRes = bml.getResource(resId)
@@ -497,13 +505,7 @@ def parseResource(node):
                 # add procedure to resource
                 thisRes.addProcedure(thisProc)
 
-                # see if procedure is also called in step
-                procStep = bml.getElement(eID=procId)
-
-                if procStep is not None:
-                    procStep.addProcedure(thisProc)
-
-def sortElements() -> list[Element]:
+def sortElements(bml:Bml) -> list[Element]:
     # get initial element
     initElem = bml.getInitialElement()
     # list of sorted elements
@@ -596,26 +598,39 @@ def sortElements() -> list[Element]:
     return orderedList
 
 ### start main
-# validate b2mml file
-xmlschema.validate(TESTXML10, SCHEMA)
+def main() -> list[Element]:
+    # validate b2mml file
+    xmlschema.validate(TESTXML10, SCHEMA)
 
-# parse b2mml file
-tree = parse(TESTXML10)
-root = tree.getroot()
+    # parse b2mml file
+    tree = parse(TESTXML10)
+    root = tree.getroot()
 
-# create bml object
-bml = Bml()
+    # create bml object
+    bml = Bml()
 
-# iterate over b2mml elements
-for child in root:
-    if child.tag == f"{NAMESPACE}MasterRecipe":
-        # parse MasterRecipe
-        parseMasterRecipe(node=child)
-    elif child.tag == f"{NAMESPACE}EquipmentElement":
-        # parse Resources
-        parseResource(node=child)
+    # iterate over b2mml elements
+    for child in root:
+        if child.tag == f"{NAMESPACE}MasterRecipe":
+            # parse MasterRecipe
+            parseMasterRecipe(bml=bml, node=child)
+        elif child.tag == f"{NAMESPACE}EquipmentElement":
+            # parse Resources
+            parseResource(bml=bml, node=child)
 
-# create list
-sortedList = sortElements()
+    # add procedures to steps
+    for e in bml.elems:
+        if e.etype == "Step" and not (e.id == "Init" or e.id == "End"):
+            if ":" in e.id:
+                procId = e.id[e.id.find(":")+1:]
+            else:
+                procId = e.id
 
-#print(bml)
+            # get procedure
+            e.addProcedure(bml.getProcedure(procId))
+
+    # return sorted list
+    return sortElements(bml=bml)
+
+if __name__ == "__main__":
+    main()

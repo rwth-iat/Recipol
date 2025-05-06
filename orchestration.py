@@ -4,7 +4,8 @@ import mtpparser as mtp
 procedure = []
 
 ### start main
-for elem in bml.sortedList:
+sortedList = bml.main()
+for elem in sortedList:
     # iterate over elements in list
     if type(elem) is not list:
         if elem.getType() == "Step":
