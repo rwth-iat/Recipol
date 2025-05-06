@@ -501,4 +501,8 @@ if __name__ == "__main__":
     # startService(opcurl=url, mode="aut", nsIndex=4, service=service)
     # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
     
-    main()
+    mtps = mtp.getMtps()
+    for m in mtps:
+        print(m.name)
+
+    #main()

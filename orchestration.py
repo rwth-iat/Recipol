@@ -5,6 +5,7 @@ procedure = []
 
 ### start main
 sortedList = bml.main()
+mtps = mtp.getMtps()
 for elem in sortedList:
     # iterate over elements in list
     if type(elem) is not list:
@@ -13,7 +14,7 @@ for elem in sortedList:
             if ":" in elemId:
                 elemId = elemId[elemId.rfind(":")+1:]
             # map to mtp instance
-            for m in mtp.mtps:
+            for m in mtps:
                 thisMtp = m
                 mInst = m.getProcedure(procId=elemId)
                 if mInst is not None:
@@ -107,21 +108,21 @@ def getProcedure() -> list[{dict}]:
 #     # to do: call control
 #     pass
 
-# for p in procedure:
-#     if type(p) is list:
-#         for pp in p:
-#             if type(pp) is dict:
-#                 if pp['inst'] is not None:
-#                     print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].name}")
-#                 else:
-#                     print(f"BML: {pp['bml'].getName()}, None")
-#             else:
-#                 print(f"TRANS: {pp.getName()}")
-#     else:
-#         if type(p) is dict:
-#             if p['mtp'] is not None:
-#                 print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
-#             else:
-#                 print(f"BML: {p['bml'].getName()}, None")
-#         else:
-#             print(f"TRANS: {p.getName()}")
+for p in procedure:
+    if type(p) is list:
+        for pp in p:
+            if type(pp) is dict:
+                if pp['inst'] is not None:
+                    print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].name}")
+                else:
+                    print(f"BML: {pp['bml'].getName()}, None")
+            else:
+                print(f"TRANS: {pp.getName()}")
+    else:
+        if type(p) is dict:
+            if p['mtp'] is not None:
+                print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
+            else:
+                print(f"BML: {p['bml'].getName()}, None")
+        else:
+            print(f"TRANS: {p.getName()}")
