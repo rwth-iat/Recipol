@@ -5,13 +5,13 @@ import orchestration as oc
 from typing import Any
 import mtpparser as mtp
 import csv
+import b2mmlparser as bml
 
-### static variables
+### global variables
 #url = "opc.tcp://192.168.0.10:4840"
 url = ""
 ns = ""
 #namespace = "urn:BeckhoffAutomation:Ua:PLC1"
-proc = oc.getProcedure()
 #pea = mtp.mtps[1]                        
 
 def getUaType(dtype:str) -> ua.VariantType:
@@ -246,9 +246,11 @@ def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
         else:
             idx = pea.nsid = asyncio.run(getNamespaceId(url, pea.ns))
         for s in pea.servs:
+            s: mtp.Service
             statuses.append({"Name": f"{pea.name}_{s.name}", "ID": s.refid, "Value": getStateByEncoding(code=checkCurrentState(opcurl=url, nsIndex=idx, service=s))})
 
         for sa in pea.sensacts:
+            sa: mtp.Instance
             if sa.paramElem["V"]["ID"] is not None:
                 statuses.append({"Name": f"{pea.name}_{sa.name}", "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["V"]["ID"]))})
             elif sa.paramElem["VOut"]["ID"] is not None:
@@ -260,9 +262,8 @@ def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
 
     return statuses
 
-def main():
+def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]], mtps:list[mtp.Pea]):
     matFlag = True
-    mtps:list[mtp.Pea] = []
     # preliminary check for material requirements
     for p in proc:
         if type(p) is list:
@@ -272,12 +273,11 @@ def main():
         else:
             if type(p) is dict:
                 # simple step
-                if p["mtp"] is not None and p["mtp"] not in mtps:
-                    mtps.append(p["mtp"])
-                # for r in p['bml'].reqs:
-                #     if "Material" in r.const:
-                #         # check by operator
-                #         material = r.const[r.const.rfind("=")+1:]
+                for r in p['bml'].reqs:
+                    if "Material" in r.const:
+                        r:  bml.Requirement
+                        # check by operator
+                        material = r.const[r.const.rfind("=")+1:]
                 #         ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
                 #         if ack.lower() == "y":
                 #             continue
@@ -289,8 +289,10 @@ def main():
     for m in mtps:
         print(m.name)
         for s in m.servs:
+            s: mtp.Service
             headers.append(f"{m.name}_{s.name}")
         for sa in m.sensacts:
+            sa: mtp.Instance
             headers.append(f"{m.name}_{sa.name}")
     
     if matFlag:
@@ -501,8 +503,8 @@ if __name__ == "__main__":
     # startService(opcurl=url, mode="aut", nsIndex=4, service=service)
     # resetService(opcurl=url, mode="aut", nsIndex=4, service=service)
     
-    mtps = mtp.getMtps()
-    for m in mtps:
-        print(m.name)
+    mtps:list[mtp.Pea] = mtp.getMtps()
 
-    #main()
+    procedure = oc.getProcedure()
+
+    #main(procedure, mtps)
