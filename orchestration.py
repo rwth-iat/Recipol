@@ -99,13 +99,6 @@ def getProcedure() -> list[dict]:
     #         else:
     #             print(f"    |___| - {p.getCond()}")
 
-    # print("\n" * 3)
-    # ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
-
-    # if ack.lower() == "y":
-    #     # to do: call control
-    #     pass
-
     return procedure
 
 if __name__ == "__main__":

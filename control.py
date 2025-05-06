@@ -507,4 +507,8 @@ if __name__ == "__main__":
 
     procedure = oc.getProcedure()
 
-    #main(procedure, mtps)
+    print("\n" * 3)
+    ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
+
+    if ack.lower() == "y":
+        main(procedure, mtps)
