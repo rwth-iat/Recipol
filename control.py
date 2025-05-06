@@ -326,7 +326,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         params = p['params']
 
                         # set os level
-                        setOSLevel(opcurl=url, nsIndex=nsid, service=service)
+                        # setOSLevel(opcurl=url, nsIndex=nsid, service=service)
 
                         # set service to automatic mode
                         setOperationMode(opcurl=url, mode="aut", nsIndex=nsid, service=service)
@@ -359,26 +359,26 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         time.sleep(0.5)
 
                         # status monitoring
-                        statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
+                        # statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
 
-                        with open('DataHistory.csv', 'r', newline='') as csvfile:
-                            reader = csv.reader(csvfile)
-                            flag = len(list(reader))
+                        # with open('DataHistory.csv', 'r', newline='') as csvfile:
+                        #     reader = csv.reader(csvfile)
+                        #     flag = len(list(reader))
                         
-                        with open('DataHistory.csv', 'a', newline='') as csvfile:
-                            writer = csv.writer(csvfile)
-                            if flag == 0:
-                                writer.writerow(headers)
-                            rowToWrite = []
-                            for head in headers:
-                                for s in statuses:
-                                    if s["Name"] == head:
-                                        if head == "Time":
-                                            rowToWrite.append(time.asctime(s["Value"]))
-                                        else:
-                                            rowToWrite.append(s["Value"])
-                                        break
-                            writer.writerow(rowToWrite)
+                        # with open('DataHistory.csv', 'a', newline='') as csvfile:
+                        #     writer = csv.writer(csvfile)
+                        #     if flag == 0:
+                        #         writer.writerow(headers)
+                        #     rowToWrite = []
+                        #     for head in headers:
+                        #         for s in statuses:
+                        #             if s["Name"] == head:
+                        #                 if head == "Time":
+                        #                     rowToWrite.append(time.asctime(s["Value"]))
+                        #                 else:
+                        #                     rowToWrite.append(s["Value"])
+                        #                 break
+                        #     writer.writerow(rowToWrite)
 
                         # for s in statuses:
                         #     if "Status" in s:
@@ -388,7 +388,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
-                    cond = p.cond
+                    cond: str = p.cond
                     if cond != "True":
                         if "AND" in cond or "OR" in cond or "NOT" in cond:
                             # To do 
