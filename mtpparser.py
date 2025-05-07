@@ -148,6 +148,37 @@ class Service:
     def __str__(self):
         return f"Name: {self.name}, ID: {self.id}, RefID: {self.refid}\nparamElem: {self.paramElem}\nProcedures: {self.procs}"
 
+class Port:
+    def __init__(self):
+        self.name:str = "" # name of the port
+        self.x:int = 0 # x coordinate of the port
+        self.y:int = 0 # y coordinate of the port
+        self.connectId = "" # ID of the connector of the port
+
+class VisualObject:
+    def __init__(self):
+        self.name:str = "" # name of the visual object
+        self.refId:str = "" # refId of the visual object
+        self.refInst:Instance = None # the instance the visual object represents
+        self.width:int = 0 # width of the visual object
+        self.height:int = 0 # height of the visual object
+        self.x:int = 0 # x coordinate of the visual object
+        self.y:int = 0 # y coordinate of the visual object
+        self.zindex:int = 0 # zindex of the visual object
+        self.rotation:int = 0 # rotation of the visual object
+        self.eClassVer:str = "" # eClass Version of the visual object
+        self.eClassClass:str = "" # eClass Classification Class of the visual object
+        self.eClassIRDI:str = "" # eClass IRDI of the visual object
+        self.ports:list[Port] = [] # list of ports the visual object has
+
+class HMI:
+    def __init__(self):
+        self.type:str = "" # type of the HMI instance, either 'Service' or 'RI'
+        self.width:int = 0 # width of the HMI instance
+        self.height:int = 0 # height of the HMI instance
+        self.hierarchy:str = "" # hierarchy level of the HMI instance
+        self.objects:list[VisualObject] = [] # list of objects of the HMI instance
+
 class Pea:
     def __init__(self):
         self.name = "" # name of the mtp
@@ -1917,6 +1948,55 @@ def getMtps() -> list[Pea]:
                                     elif paramNode.tag == f"{NAMESPACE}Attribute" and paramNode.get("Name") == "ProcedureID":
                                         proc.procId = int(paramNode.findtext(f"{NAMESPACE}Value"))
 
+            elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "HMI":
+                # parse HMI Information for HC10/HC2040
+                children = child.findall(".//*[@RefBaseSystemUnitPath='MTPHMISUCLib/Picture']")
+                if len(children) == 1:
+                    # HC2040
+                    # create HMI instance
+                    hmi = HMI()
+                    # set type to RI because HC2040 doesn't support services
+                    hmi.type = "RI"
+                    # set width, height and hierarchy level
+                    for gchild in children[0]:
+                        if gchild.tag == f"{NAMESPACE}Attribute":
+                            if gchild.get("Name") == "Width":
+                                hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                            elif gchild.get("Name") == "Height":
+                                hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                            elif gchild.get("Name") == "HierarchyLevel":
+                                hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/VisualObject":
+                            # add visual objects
+                            visObj = VisualObject()
+                            visObj.name = gchild.get("Name")
+                            visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value")
+                            visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value")
+                            visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                            visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value")
+                            visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value")
+                            visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
+                            visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
+                            visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value")
+                            visObj.refInst = mtp.getInstance(instId=visObj.refId)
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                visObj.ports.append(port)
+                            hmi.objects.append(visObj)
+                else:
+                    # HC10
+                    pass
+            elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Pictures":
+                pass
         # get sensors and actuators
         for i in mtp.insts:
             if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
