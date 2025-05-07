@@ -39,14 +39,14 @@
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
 				<b2mml:Value>
-					<b2mml:ValueString>3</b2mml:ValueString>
+					<b2mml:ValueString>5</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
 					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 			<b2mml:Parameter>
-				<b2mml:ID>002:cdcba87e-1eef-490a-828f-15f6626a883c</b2mml:ID>
+				<b2mml:ID>002:a9f19eaf-b8a2-4269-a46e-b7a490758a40</b2mml:ID>
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
 				<b2mml:Value>
@@ -61,7 +61,7 @@
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
 				<b2mml:Value>
-					<b2mml:ValueString>10</b2mml:ValueString>
+					<b2mml:ValueString>5</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
 					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
@@ -232,7 +232,7 @@
 			</b2mml:Step>
 			<b2mml:Step>
 				<b2mml:ID>S3</b2mml:ID>
-				<b2mml:RecipeElementID>002:244ba77a-2ffe-43c1-970e-b11c56e5e805</b2mml:RecipeElementID>
+				<b2mml:RecipeElementID>002:db9e4402-9f5e-49cf-85a7-56b534516e62</b2mml:RecipeElementID>
 				<b2mml:RecipeElementVersion />
 				<b2mml:Description>002:Stirring:Duration_Stirring</b2mml:Description>
 			</b2mml:Step>
@@ -303,7 +303,7 @@
 		</b2mml:RecipeElement>
         <b2mml:RecipeElement>
 			<!--!!ID must be unique and reference the procedure of the HC-->
-			<b2mml:ID>002:244ba77a-2ffe-43c1-970e-b11c56e5e805</b2mml:ID>
+			<b2mml:ID>002:db9e4402-9f5e-49cf-85a7-56b534516e62</b2mml:ID>
 			<b2mml:Description>Continuous Stirring Procedure</b2mml:Description>
 			<b2mml:RecipeElementType>Operation</b2mml:RecipeElementType>
 			<b2mml:ActualEquipmentID>HC20Instance</b2mml:ActualEquipmentID>
@@ -311,7 +311,7 @@
 				<b2mml:ID>Equipment Requirement for the HCs</b2mml:ID>
 			</b2mml:EquipmentRequirement>
 			<b2mml:Parameter>
-				<b2mml:ID>002:cdcba87e-1eef-490a-828f-15f6626a883c</b2mml:ID>
+				<b2mml:ID>002:a9f19eaf-b8a2-4269-a46e-b7a490758a40</b2mml:ID>
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 			</b2mml:Parameter>
 		</b2mml:RecipeElement>
@@ -565,11 +565,11 @@
 			</b2mml:Parameter>
 		</b2mml:EquipmentProceduralElement>
 		<b2mml:EquipmentProceduralElement>
-			<b2mml:ID>244ba77a-2ffe-43c1-970e-b11c56e5e805</b2mml:ID>
+			<b2mml:ID>db9e4402-9f5e-49cf-85a7-56b534516e62</b2mml:ID>
 			<b2mml:Description>HC20:Stirring:StirrDuration</b2mml:Description>			
 			<b2mml:EquipmentProceduralElementType>Procedure</b2mml:EquipmentProceduralElementType>
 			<b2mml:Parameter>
-				<b2mml:ID>cdcba87e-1eef-490a-828f-15f6626a883c</b2mml:ID>
+				<b2mml:ID>a9f19eaf-b8a2-4269-a46e-b7a490758a40</b2mml:ID>
 				<b2mml:Description>DurationStirr</b2mml:Description>
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
