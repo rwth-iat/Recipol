@@ -171,13 +171,56 @@ class VisualObject:
         self.eClassIRDI:str = "" # eClass IRDI of the visual object
         self.ports:list[Port] = [] # list of ports the visual object has
 
+class Junction:
+    def __init__(self):
+        self.name:str = "" # name of the topology object
+        self.x:int = 0 # x coordinate of the topology object
+        self.y:int = 0 # y coordinate of the topology object
+        self.ports:list[Port] = [] # list of ports the topology object has
+
+class Source:
+    def __init__(self):
+        self.name:str = "" # name of the source object
+        self.x:int = 0 # x coordinate of the source object
+        self.y:int = 0 # y coordinate of the source object
+        self.termId:str = "" # term ID of the source object
+        self.ports:list[Port] = [] # list of ports the source object has
+
+class Sink:
+    def __init__(self):
+        self.name:str = "" # name of the sink object
+        self.x:int = 0 # x coordinate of the sink object
+        self.y:int = 0 # y coordinate of the sink object
+        self.termId:str = "" # term ID of the sink object
+        self.ports:list[Port] = [] # list of ports the sink object has
+
+class Pipe:
+    def __init__(self):
+        self.name:str = "" # name of the pipe
+        self.direct:bool = False # whether the pipe is directed or not
+        self.ep:str = "" # the edge path of the pipe
+        self.ports:list[Port] = [] # list of ports of the pipe
+
+class Line:
+    def __init__(self):
+        self.type:str = "" # the type of the line, either Function or Measurement
+        self.name:str = "" # name of the line
+        self.ep:str = "" # the edge path of the line        
+        self.ports:list[Port] = [] # list of ports of the line
+
 class HMI:
     def __init__(self):
         self.type:str = "" # type of the HMI instance, either 'Service' or 'RI'
         self.width:int = 0 # width of the HMI instance
         self.height:int = 0 # height of the HMI instance
         self.hierarchy:str = "" # hierarchy level of the HMI instance
-        self.objects:list[VisualObject] = [] # list of objects of the HMI instance
+        self.visuals:list[VisualObject] = [] # list of visual objects of the HMI instance
+        self.juncts:list[Junction] = [] # list of junction objects of the HMI instance
+        self.srcs:list[Source] = [] # list of source objects of the HMI instance
+        self.sinks:list[Sink] = [] # list of sink objects of the HMI instance
+        self.pipes:list[Pipe] = [] # list of pipes of the HMI instance
+        self.lines:list[Line] = [] # list of function lines of the HMI instance
+        self.links:list[tuple[str,str]] = [] # list of internal links consisting of the refIds of both connection sides
 
 class Pea:
     def __init__(self):
@@ -1991,7 +2034,115 @@ def getMtps() -> list[Pea]:
                                 port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
                                 port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
                                 visObj.ports.append(port)
-                            hmi.objects.append(visObj)
+                            hmi.visuals.append(visObj)
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Junction":
+                            # add junction objects
+                            junc = Junction()
+                            junc.name = gchild.get("Name")
+                            junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                junc.ports.append(port)
+                            hmi.juncts.append(junc)
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Sink":
+                            # add sink objects
+                            sinkObj = Sink()
+                            sinkObj.name = gchild.get("Name")
+                            sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                sinkObj.ports.append(port)
+                            hmi.sinks.append(sinkObj)
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Source":
+                            # add source objects
+                            sourceObj = Source()
+                            sourceObj.name = gchild.get("Name")
+                            sourceObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            sourceObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            sourceObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                sourceObj.ports.append(port)
+                            hmi.srcs.append(sourceObj)
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/Pipe":
+                            # add pipe objects
+                            pipeObj = Pipe()
+                            pipeObj.name = gchild.get("Name")
+                            pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value")
+                            pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                pipeObj.ports.append(port)
+                            hmi.pipes.append(pipeObj)
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/FunctionLine":
+                            # add function line objects
+                            functlinObj = Line()
+                            functlinObj.type = "Function Line"
+                            functlinObj.name = gchild.get("Name")
+                            functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/LogicalPort']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                functlinObj.ports.append(port)
+                            hmi.lines.append(functlinObj)
+                        elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/MeasurementLine":
+                            # add measurement line objects
+                            measLinObj = Line()
+                            measLinObj.type = "Measurement Line"
+                            measLinObj.name = gchild.get("Name")
+                            measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/LogicalPort']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                measLinObj.ports.append(port)
+                            hmi.lines.append(measLinObj)
+                        elif gchild.tag == f"{NAMESPACE}InternalLink":
+                            sideA = gchild.get("RefPartnerSideA")
+                            sideB = gchild.get("RefPartnerSideB")
+                            hmi.links.append((sideA, sideB))
                 else:
                     # HC10
                     pass
