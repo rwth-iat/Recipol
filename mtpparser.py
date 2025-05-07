@@ -176,6 +176,7 @@ class Junction:
         self.name:str = "" # name of the topology object
         self.x:int = 0 # x coordinate of the topology object
         self.y:int = 0 # y coordinate of the topology object
+        self.zindex:int = 0 # z index of the topology object
         self.ports:list[Port] = [] # list of ports the topology object has
 
 class Source:
@@ -184,6 +185,7 @@ class Source:
         self.x:int = 0 # x coordinate of the source object
         self.y:int = 0 # y coordinate of the source object
         self.termId:str = "" # term ID of the source object
+        self.zindex:int = 0 # z index of the source object
         self.ports:list[Port] = [] # list of ports the source object has
 
 class Sink:
@@ -192,6 +194,7 @@ class Sink:
         self.x:int = 0 # x coordinate of the sink object
         self.y:int = 0 # y coordinate of the sink object
         self.termId:str = "" # term ID of the sink object
+        self.zindex:int = 0 # z index of the sink object
         self.ports:list[Port] = [] # list of ports the sink object has
 
 class Pipe:
@@ -199,13 +202,15 @@ class Pipe:
         self.name:str = "" # name of the pipe
         self.direct:bool = False # whether the pipe is directed or not
         self.ep:str = "" # the edge path of the pipe
+        self.zindex:int = 0 # the z index of the pipe
         self.ports:list[Port] = [] # list of ports of the pipe
 
 class Line:
     def __init__(self):
         self.type:str = "" # the type of the line, either Function or Measurement
         self.name:str = "" # name of the line
-        self.ep:str = "" # the edge path of the line        
+        self.ep:str = "" # the edge path of the line
+        self.zindex:int = 0 # the z index of the line
         self.ports:list[Port] = [] # list of ports of the line
 
 class HMI:
@@ -232,6 +237,7 @@ class Pea:
         self.url = "" # address of the opc ua server
         self.ns = "" # namespace of the opc ua server
         self.nsid = None # index of the opc namespace
+        self.hmis:list[HMI] = [] # list of the hmi representation(s) of the PEA
 
     def __str__(self):
         descr = f"{self.name}\nInstances:"
@@ -2003,27 +2009,81 @@ def getMtps() -> list[Pea]:
                     # set width, height and hierarchy level
                     for gchild in children[0]:
                         if gchild.tag == f"{NAMESPACE}Attribute":
+                            # width
                             if gchild.get("Name") == "Width":
-                                hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                    hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                    hmi.width = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
+                            # height
                             elif gchild.get("Name") == "Height":
-                                hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                    hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                    hmi.height = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
+                            # hierarchy level
                             elif gchild.get("Name") == "HierarchyLevel":
-                                hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                                if gchild.findtext(f"{NAMESPACE}Value") is not None:
+                                    hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                                elif gchild.findtext(f"{NAMESPACE}DefaultValue") is not None:
+                                    hmi.hierarchy = gchild.findtext(f"{NAMESPACE}DefaultValue")
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/VisualObject":
                             # add visual objects
                             visObj = VisualObject()
                             visObj.name = gchild.get("Name")
-                            visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value")
-                            visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value")
-                            visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                            visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
-                            visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
-                            visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value")
-                            visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value")
-                            visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
-                            visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
-                            visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value")
+                            # width
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value") is not None:
+                                visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}DefaultValue")
+                            # height
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value") is not None:
+                                visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}DefaultValue")
+                            # x coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            # z index
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                                visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                            # rotation
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value") is not None:
+                                visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}DefaultValue")
+                            # eClass Version
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value") is not None:
+                                visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}DefaultValue")
+                            # eClass Classification Class
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value") is not None:
+                                visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}DefaultValue")
+                            # eClass IRDI
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value") is not None:
+                                visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}DefaultValue")
+                            # refId
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value") is not None:
+                                visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}DefaultValue") is not None:
+                                visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}DefaultValue")
+                            # refInstance
                             visObj.refInst = mtp.getInstance(instId=visObj.refId)
+
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                             for pn in portNodes:
@@ -2031,16 +2091,34 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+
                                 visObj.ports.append(port)
                             hmi.visuals.append(visObj)
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Junction":
                             # add junction objects
                             junc = Junction()
                             junc.name = gchild.get("Name")
-                            junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                            junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            # x coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                             for pn in portNodes:
@@ -2048,17 +2126,39 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
                                 junc.ports.append(port)
                             hmi.juncts.append(junc)
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Sink":
                             # add sink objects
                             sinkObj = Sink()
                             sinkObj.name = gchild.get("Name")
-                            sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                            sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
-                            sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                            # x coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            # term ID
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value") is not None:
+                                sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue") is not None:
+                                sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue")
+                            
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                             for pn in portNodes:
@@ -2066,17 +2166,39 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
                                 sinkObj.ports.append(port)
                             hmi.sinks.append(sinkObj)
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Source":
                             # add source objects
                             sourceObj = Source()
                             sourceObj.name = gchild.get("Name")
-                            sourceObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                            sourceObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
-                            sourceObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                            # x coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                sourceObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                sourceObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                sourceObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                sourceObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            # term ID
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value") is not None:
+                                sourceObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue") is not None:
+                                sourceObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue")
+                            
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                             for pn in portNodes:
@@ -2084,16 +2206,34 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
                                 sourceObj.ports.append(port)
                             hmi.srcs.append(sourceObj)
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/Pipe":
                             # add pipe objects
                             pipeObj = Pipe()
                             pipeObj.name = gchild.get("Name")
-                            pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value")
-                            pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            # directed flag
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value") is not None:
+                                pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}DefaultValue") is not None:
+                                pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}DefaultValue")
+                            # edge path
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                                pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                                pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                            
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                             for pn in portNodes:
@@ -2101,8 +2241,17 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
                                 pipeObj.ports.append(port)
                             hmi.pipes.append(pipeObj)
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/FunctionLine":
@@ -2110,7 +2259,12 @@ def getMtps() -> list[Pea]:
                             functlinObj = Line()
                             functlinObj.type = "Function Line"
                             functlinObj.name = gchild.get("Name")
-                            functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            # edge path
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                                functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                                functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                            
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/LogicalPort']")
                             for pn in portNodes:
@@ -2118,8 +2272,17 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
                                 functlinObj.ports.append(port)
                             hmi.lines.append(functlinObj)
                         elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/MeasurementLine":
@@ -2127,7 +2290,12 @@ def getMtps() -> list[Pea]:
                             measLinObj = Line()
                             measLinObj.type = "Measurement Line"
                             measLinObj.name = gchild.get("Name")
-                            measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            # edge path
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                                measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                                measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                            
                             # find nodes that have port information
                             portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/MeasurementPoint']")
                             for pn in portNodes:
@@ -2135,14 +2303,27 @@ def getMtps() -> list[Pea]:
                                 port = Port()
                                 port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                 port.name = pn.get("Name")
-                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
                                 measLinObj.ports.append(port)
                             hmi.lines.append(measLinObj)
                         elif gchild.tag == f"{NAMESPACE}InternalLink":
+                            # side A
                             sideA = gchild.get("RefPartnerSideA")
+                            # side B
                             sideB = gchild.get("RefPartnerSideB")
                             hmi.links.append((sideA, sideB))
+
+                    mtp.hmis.append(hmi)
                 else:
                     # HC10
                     for hminode in children:
@@ -2154,11 +2335,20 @@ def getMtps() -> list[Pea]:
                             for gchild in hminode:
                                 if gchild.tag == f"{NAMESPACE}Attribute":
                                     if gchild.get("Name") == "Width":
-                                        hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                            hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                            hmi.width = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
                                     elif gchild.get("Name") == "Height":
-                                        hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                            hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                            hmi.height = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
                                     elif gchild.get("Name") == "HierarchyLevel":
-                                        hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                                        if gchild.findtext(f"{NAMESPACE}Value") is not None:
+                                            hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                                        elif gchild.findtext(f"{NAMESPACE}DefaultValue") is not None:
+                                            hmi.hierarchy = gchild.findtext(f"{NAMESPACE}DefaultValue")
                                 elif gchild.tag == f"{NAMESPACE}InternalElement":
                                     # add visual object
                                     visObj = VisualObject()
@@ -2175,24 +2365,48 @@ def getMtps() -> list[Pea]:
                                     visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
                                     visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
                                     hmi.visuals.append(visObj)
+
+                            mtp.hmis.append(hmi)
                         elif hminode.get("Name") == "RI_Fliessbild":
                             # set type to ri
                             hmi.type = "RI"
                             for gchild in hminode:
                                 if gchild.tag == f"{NAMESPACE}Attribute":
                                     if gchild.get("Name") == "Width":
-                                        hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                            hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                            hmi.width = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
                                     elif gchild.get("Name") == "Height":
-                                        hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                            hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                                        elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                            hmi.height = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
                                     elif gchild.get("Name") == "HierarchyLevel":
-                                        hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                                        if gchild.findtext(f"{NAMESPACE}Value") is not None:
+                                            hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                                        elif gchild.findtext(f"{NAMESPACE}DefaultValue") is not None:
+                                            hmi.hierarchy = gchild.findtext(f"{NAMESPACE}DefaultValue")
                                 elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Sink":
                                     # add sink objects
                                     sinkObj = Sink()
                                     sinkObj.name = gchild.get("Name")
-                                    sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                    sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
-                                    sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                                    # x coordinate
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                        sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                        sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                    # y coordinate
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                        sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                        sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                    # term ID
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value") is not None:
+                                        sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue") is not None:
+                                        sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue")
+                                    
                                     # find nodes that have port information
                                     portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                                     for pn in portNodes:
@@ -2200,16 +2414,34 @@ def getMtps() -> list[Pea]:
                                         port = Port()
                                         port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                         port.name = pn.get("Name")
-                                        port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                        port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        # x coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                        # y coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                        
                                         sinkObj.ports.append(port)
                                     hmi.sinks.append(sinkObj)
                                 elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Junction":
                                     # add junction objects
                                     junc = Junction()
                                     junc.name = gchild.get("Name")
-                                    junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                    junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                    # x coordinate
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                        junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                        junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                    # y coordinate
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                        junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                        junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+
                                     # find nodes that have port information
                                     portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                                     for pn in portNodes:
@@ -2217,8 +2449,17 @@ def getMtps() -> list[Pea]:
                                         port = Port()
                                         port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                         port.name = pn.get("Name")
-                                        port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                        port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        # x coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                        # y coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                        
                                         junc.ports.append(port)
                                     hmi.juncts.append(junc)
                                 elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/MeasurementLine":
@@ -2226,7 +2467,12 @@ def getMtps() -> list[Pea]:
                                     measLinObj = Line()
                                     measLinObj.type = "Measurement Line"
                                     measLinObj.name = gchild.get("Name")
-                                    measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                                    # edge path
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                                        measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                                        measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                                    
                                     # find nodes that have port information
                                     portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/MeasurementPoint']")
                                     for pn in portNodes:
@@ -2234,8 +2480,17 @@ def getMtps() -> list[Pea]:
                                         port = Port()
                                         port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                         port.name = pn.get("Name")
-                                        port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                        port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        # x coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                        # y coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                        
                                         measLinObj.ports.append(port)
                                     hmi.lines.append(measLinObj)
                                 elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/FunctionLine":
@@ -2243,7 +2498,12 @@ def getMtps() -> list[Pea]:
                                     functlinObj = Line()
                                     functlinObj.type = "Function Line"
                                     functlinObj.name = gchild.get("Name")
-                                    functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                                    # edge path
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                                        functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                                        functlinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                                    
                                     # find nodes that have port information
                                     portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/LogicalPort']")
                                     for pn in portNodes:
@@ -2251,16 +2511,34 @@ def getMtps() -> list[Pea]:
                                         port = Port()
                                         port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                         port.name = pn.get("Name")
-                                        port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                        port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        # x coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                        # y coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                        
                                         functlinObj.ports.append(port)
                                     hmi.lines.append(functlinObj)
                                 elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/Pipe":
                                     # add pipe objects
                                     pipeObj = Pipe()
                                     pipeObj.name = gchild.get("Name")
-                                    pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value")
-                                    pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                                    # directed flag
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value") is not None:
+                                        pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}DefaultValue") is not None:
+                                        pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}DefaultValue")
+                                    # edge path
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                                        pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                                        pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                                    
                                     # find nodes that have port information
                                     portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                                     for pn in portNodes:
@@ -2268,25 +2546,76 @@ def getMtps() -> list[Pea]:
                                         port = Port()
                                         port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                         port.name = pn.get("Name")
-                                        port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                        port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        # x coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                        # y coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                        
                                         pipeObj.ports.append(port)
                                     hmi.pipes.append(pipeObj)
                                 elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/VisualObject":
                                     # add visual objects
                                     visObj = VisualObject()
                                     visObj.name = gchild.get("Name")
-                                    visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value")
-                                    visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value")
-                                    visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                    visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
-                                    visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
-                                    visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value")
-                                    visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value")
-                                    visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
-                                    visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
-                                    visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value")
+                                    # width
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value") is not None:
+                                        visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}DefaultValue")
+                                    # height
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value") is not None:
+                                        visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}DefaultValue")
+                                    # x coordinate
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                        visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                    # y coordinate
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                        visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                    # z index
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                                        visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                                    # rotation
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value") is not None:
+                                        visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}DefaultValue")
+                                    # eClass Version
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value") is not None:
+                                        visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}DefaultValue")
+                                    # eClass Classification Class
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value") is not None:
+                                        visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}DefaultValue")
+                                    # eClass IRDI
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value") is not None:
+                                        visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}DefaultValue")
+                                    # refId
+                                    if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value") is not None:
+                                        visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value")
+                                    elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}DefaultValue") is not None:
+                                        visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}DefaultValue")
+                                    # refInstance
                                     visObj.refInst = mtp.getInstance(instId=visObj.refId)
+                                    
                                     # find nodes that have port information
                                     portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
                                     for pn in portNodes:
@@ -2294,16 +2623,334 @@ def getMtps() -> list[Pea]:
                                         port = Port()
                                         port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
                                         port.name = pn.get("Name")
-                                        port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
-                                        port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        # x coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                            port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                        # y coordinate
+                                        if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                        elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                            port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                        
                                         visObj.ports.append(port)
                                     hmi.visuals.append(visObj)
                                 elif gchild.tag == f"{NAMESPACE}InternalLink":
                                     sideA = gchild.get("RefPartnerSideA")
                                     sideB = gchild.get("RefPartnerSideB")
                                     hmi.links.append((sideA, sideB))
+
+                            mtp.hmis.append(hmi)
             elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Pictures":
-                pass
+                # parse HMI Information for HC30
+                hminode = child.find(f".//*[@RefBaseSystemUnitPath='MTPHMISUCLib/Picture'][@Name='{mtp.name}']")
+                # create hmi
+                hmi = HMI()
+                # set type to RI because HC30 doesn't support services
+                hmi.type = "RI"
+                for gchild in hminode:
+                    if gchild.tag == f"{NAMESPACE}Attribute":
+                        if gchild.get("Name") == "Width":
+                            if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                hmi.width = int(gchild.findtext(f"{NAMESPACE}Value"))
+                            elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                hmi.width = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
+                        elif gchild.get("Name") == "Height":
+                            if int(gchild.findtext(f"{NAMESPACE}Value")) is not None:
+                                hmi.height = int(gchild.findtext(f"{NAMESPACE}Value"))
+                            elif int(gchild.findtext(f"{NAMESPACE}DefaultValue")) is not None:
+                                hmi.height = int(gchild.findtext(f"{NAMESPACE}DefaultValue"))
+                        elif gchild.get("Name") == "HierarchyLevel":
+                            if gchild.findtext(f"{NAMESPACE}Value") is not None:
+                                hmi.hierarchy = gchild.findtext(f"{NAMESPACE}Value")
+                            elif gchild.findtext(f"{NAMESPACE}DefaultValue") is not None:
+                                hmi.hierarchy = gchild.findtext(f"{NAMESPACE}DefaultValue")
+                    elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/MeasurementLine":
+                        # add measurement line objects
+                        measLinObj = Line()
+                        measLinObj.type = "Measurement Line"
+                        measLinObj.name = gchild.get("Name")
+                        # edge path
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                            measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                            measLinObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                        # z index
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                            measLinObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                            measLinObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                        
+                        # find nodes that have port information
+                        portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/MeasurementPoint']")
+                        for pn in portNodes:
+                            # create port
+                            port = Port()
+                            port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                            port.name = pn.get("Name")
+                            # x coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            
+                            measLinObj.ports.append(port)
+                        hmi.lines.append(measLinObj)
+                    elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/Connection/Pipe":
+                        # add pipe objects
+                        pipeObj = Pipe()
+                        pipeObj.name = gchild.get("Name")
+                        # directed flag
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value") is not None:
+                            pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}DefaultValue") is not None:
+                            pipeObj.direct = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Directed']/{NAMESPACE}DefaultValue")
+                        # edge path
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value") is not None:
+                            pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue") is not None:
+                            pipeObj.ep = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Edgepath']/{NAMESPACE}DefaultValue")
+                        # z Index
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                            pipeObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                            pipeObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                        
+                        # find nodes that have port information
+                        portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                        for pn in portNodes:
+                            # create port
+                            port = Port()
+                            port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                            port.name = pn.get("Name")
+                            # x coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            
+                            pipeObj.ports.append(port)
+                        hmi.pipes.append(pipeObj)
+                    elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/VisualObject":
+                        # add visual objects
+                        visObj = VisualObject()
+                        visObj.name = gchild.get("Name")
+                        # width
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value") is not None:
+                            visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.width = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Width']/{NAMESPACE}DefaultValue")
+                        # height
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value") is not None:
+                            visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.height = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Height']/{NAMESPACE}DefaultValue")
+                        # x coordinate
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                            visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                        # y coordinate
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                            visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                        # z index
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                            visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                        # rotation
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value") is not None:
+                            visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.rotation = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Rotation']/{NAMESPACE}DefaultValue")
+                        # eClass Version
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value") is not None:
+                            visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.eClassVer = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassVersion']/{NAMESPACE}DefaultValue")
+                        # eClass Classification Class
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value") is not None:
+                            visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.eClassClass = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassClassificationClass']/{NAMESPACE}DefaultValue")
+                        # eClass IRDI
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value") is not None:
+                            visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.eClassIRDI = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='eClassIRDI']/{NAMESPACE}DefaultValue")
+                        # refId
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value") is not None:
+                            visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}DefaultValue") is not None:
+                            visObj.refId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='RefID']/{NAMESPACE}DefaultValue")
+                        # refInstance
+                        visObj.refInst = mtp.getInstance(instId=visObj.refId)
+
+                        # find nodes that have port information
+                        portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                        for pn in portNodes:
+                            # create port
+                            port = Port()
+                            port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                            port.name = pn.get("Name")
+                            # x coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+
+                            visObj.ports.append(port)
+                        hmi.visuals.append(visObj)
+                    elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Source":
+                        # add source objects
+                        sourceObj = Source()
+                        sourceObj.name = gchild.get("Name")
+                        # x coordinate
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                            sourceObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                            sourceObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                        # y coordinate
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                            sourceObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                            sourceObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                        # z index
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                            sourceObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                            sourceObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                        # term ID
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value") is not None:
+                            sourceObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue") is not None:
+                            sourceObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue")
+                        
+                        # find nodes that have port information
+                        portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                        for pn in portNodes:
+                            # create port
+                            port = Port()
+                            port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                            port.name = pn.get("Name")
+                            # x coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            
+                            sourceObj.ports.append(port)
+                        hmi.srcs.append(sourceObj)
+                    elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Termination/Sink":
+                        # add sink objects
+                        sinkObj = Sink()
+                        sinkObj.name = gchild.get("Name")
+                        # x coordinate
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                            sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                            sinkObj.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                        # y coordinate
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                            sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                            sinkObj.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                        # z index
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                            sinkObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                            sinkObj.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+                        # term ID
+                        if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value") is not None:
+                            sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}Value")
+                        elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue") is not None:
+                            sinkObj.termId = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='TermID']/{NAMESPACE}DefaultValue")
+                        
+                        # find nodes that have port information
+                        portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                        for pn in portNodes:
+                            # create port
+                            port = Port()
+                            port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                            port.name = pn.get("Name")
+                            # x coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            
+                            sinkObj.ports.append(port)
+                        hmi.sinks.append(sinkObj)
+                    elif gchild.tag == f"{NAMESPACE}InternalElement" and gchild.get("RefBaseSystemUnitPath") == "MTPHMISUCLib/TopologyObject/Junction":
+                            # add junction objects
+                            junc = Junction()
+                            junc.name = gchild.get("Name")
+                            # x coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                junc.x = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                            # y coordinate
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                junc.y = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                            # z index
+                            if gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value") is not None:
+                                junc.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}Value")
+                            elif gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue") is not None:
+                                junc.zindex = gchild.findtext(f".//{NAMESPACE}Attribute[@Name='ZIndex']/{NAMESPACE}DefaultValue")
+
+                            # find nodes that have port information
+                            portNodes = gchild.findall(f".//{NAMESPACE}InternalElement[@RefBaseSystemUnitPath='MTPHMISUCLib/PortObject/Nozzle']")
+                            for pn in portNodes:
+                                # create port
+                                port = Port()
+                                port.connectId = pn.find(f".//{NAMESPACE}ExternalInterface[@Name='Connector']").get("ID")
+                                port.name = pn.get("Name")
+                                # x coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue") is not None:
+                                    port.x = pn.findtext(f".//{NAMESPACE}Attribute[@Name='X']/{NAMESPACE}DefaultValue")
+                                # y coordinate
+                                if pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}Value")
+                                elif pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue") is not None:
+                                    port.y = pn.findtext(f".//{NAMESPACE}Attribute[@Name='Y']/{NAMESPACE}DefaultValue")
+                                
+                                junc.ports.append(port)
+                            hmi.juncts.append(junc)
+
+                mtp.hmis.append(hmi)
         # get sensors and actuators
         for i in mtp.insts:
             if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
