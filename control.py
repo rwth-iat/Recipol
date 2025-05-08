@@ -350,6 +350,10 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         if currState == 16:
                             # idle, start service
                             startService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                        elif currState == 131072:
+                            # completed, reset and start
+                            resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                            startService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
                         elif currState == 512:
                             # aborted, abort
                             return
