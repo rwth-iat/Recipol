@@ -85,19 +85,19 @@ def getProcedure() -> list[dict]:
     #             print(" |       |")
     #             print(" |_______|")
     #     else:
-    #         if type(p) is dict:
-    #             name = p['bml'].getName()
-    #             namelen = len(name)
-    #             print("  ____|____")
-    #             print(" |         |")
-    #             while namelen > 0:
-    #                 print(f" | {name[:7]: <7} |")
-    #                 name = name[7:]
-    #                 namelen = namelen -7
-    #             print(" |_________|")
-    #             print("     _|_")
-    #         else:
-    #             print(f"    |___| - {p.getCond()}")
+            # if type(p) is dict:
+            #     name = p['bml'].getName()
+            #     namelen = len(name)
+            #     print("  ____|____")
+            #     print(" |         |")
+            #     while namelen > 0:
+            #         print(f" | {name[:7]: <7} |")
+            #         name = name[7:]
+            #         namelen = namelen -7
+            #     print(" |_________|")
+            #     print("     _|_")
+            # else:
+            #     print(f"    |___| - {p.getCond()}")
 
     for p in procedure:
         if type(p) is list:

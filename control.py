@@ -6,6 +6,7 @@ from typing import Any
 import mtpparser as mtp
 import csv
 import b2mmlparser as bml
+import sequenz as seq
 
 ### global variables
 #url = "opc.tcp://192.168.0.10:4840"
@@ -305,6 +306,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                     # transition in a parallel function
                     pass
             else:
+                #seq.drawSequenceDiagram(p, proc)
                 if type(p) is dict:
                     # simple step
                     if p['inst'] is None:
