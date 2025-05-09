@@ -603,7 +603,7 @@ def main() -> list[Element]:
     #xmlschema.validate(TESTXML10, SCHEMA)
 
     # parse b2mml file
-    tree = parse(TESTXMLALL)
+    tree = parse(TESTXML10)
     root = tree.getroot()
 
     # create bml object

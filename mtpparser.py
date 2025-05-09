@@ -17,6 +17,7 @@ class Instance:
         self.max = None # maximal value of the instance
         self.default = None # default value of the instance
         self.unit = None # unit of the instance
+        self.unitval: int = None # numerical identifier of the unit of the instance
         self.paramElem = {'WQC': {'Type': 'BYTE', 'ID': None, 'Default': None},
                           'OSLevel': {'Type': 'BYTE', 'ID': None, 'Default': None},
                           'CommandInfo': {'Type': 'DWORD', 'ID': None, 'Default': None},
@@ -1909,6 +1910,7 @@ def getMtps() -> list[Pea]:
                                             inst.paramElem['VUnit']['ID'] = id
                                             inst.paramElem['VUnit']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
                                             unitId = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                            inst.unitval = int(unitId)
                                             inst.addUnit(getUnit(int(unitId)))
 
                                     # add instance to mtp

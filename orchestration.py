@@ -36,7 +36,10 @@ def getProcedure() -> list[dict]:
                         if mParam is None:
                             raise RuntimeError(f"Invalid parameter ID {p.id}.")
                         else:
-                            if p.unit.lower() != mParam.unit.lower() and mParam.unit != "Maßeinheit nicht bekannt":
+                            if p.unit.isdecimal():
+                                if int(p.unit) != mParam.unitval and mParam.unitval != 1998:
+                                    raise RuntimeError(f"Invalid unit for parameter {mParam.name}. Expected {mParam.unitval}, received {p.unit}.")
+                            elif p.unit.lower() != mParam.unit.lower() and mParam.unit != "Maßeinheit nicht bekannt":
                                 raise RuntimeError(f"Invalid unit for parameter {mParam.name}. Expected {mParam.unit}, received {p.unit}.")
                             elif float(p.value) < mParam.min or float(p.value) > mParam.max:
                                 raise RuntimeError(f"Invalid value for parameter {mParam.name}. The value has to be within {mParam.min,mParam.max}")

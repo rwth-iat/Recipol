@@ -42,7 +42,7 @@
 					<b2mml:ValueString>3</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
-					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
+					<b2mml:UnitOfMeasure>1054</b2mml:UnitOfMeasure>
 				</b2mml:Value>
 			</b2mml:Parameter>
 			<b2mml:Parameter>
