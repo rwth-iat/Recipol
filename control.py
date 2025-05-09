@@ -279,12 +279,12 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         r:  bml.Requirement
                         # check by operator
                         material = r.const[r.const.rfind("=")+1:]
-                #         ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
-                #         if ack.lower() == "y":
-                #             continue
-                #         else:
-                #             matFlag = False
-                #             break
+                        ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
+                        if ack.lower() == "y":
+                            continue
+                        else:
+                            matFlag = False
+                            return
     # create list of headers
     headers:list[str] = ["Time"]
     for m in mtps:
@@ -513,8 +513,10 @@ if __name__ == "__main__":
 
     procedure = oc.getProcedure()
 
-    print("\n" * 3)
-    ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
+    # print("\n" * 3)
+    # ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
 
     # if ack.lower() == "y":
     #     main(procedure, mtps)
+
+    main(procedure, mtps)
