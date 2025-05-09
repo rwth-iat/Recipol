@@ -79,7 +79,11 @@ def getProcedure() -> list[dict]:
             procedure.append(sl)
 
     # user check before continuation
+    i = 0
     # for p in procedure:
+    #     if i == 0:
+    #         print("     _ _    ")
+    #         i += 1
     #     if type(p) is list:
     #         if type(p[0]) is dict:
     #             print("     |")
@@ -88,38 +92,38 @@ def getProcedure() -> list[dict]:
     #             print(" |       |")
     #             print(" |_______|")
     #     else:
-            # if type(p) is dict:
-            #     name = p['bml'].getName()
-            #     namelen = len(name)
-            #     print("  ____|____")
-            #     print(" |         |")
-            #     while namelen > 0:
-            #         print(f" | {name[:7]: <7} |")
-            #         name = name[7:]
-            #         namelen = namelen -7
-            #     print(" |_________|")
-            #     print("     _|_")
-            # else:
-            #     print(f"    |___| - {p.getCond()}")
+    #         if type(p) is dict:
+    #             name = p['bml'].getName()
+    #             namelen = len(name)
+    #             print("  ____|____")
+    #             print(" |         |")
+    #             while namelen > 0:
+    #                 print(f" | {name[:7]: <7} |")
+    #                 name = name[7:]
+    #                 namelen = namelen -7
+    #             print(" |_________|")
+    #             print("     _|_")
+    #         else:
+    #             print(f"    |___| - {p.getCond()}")
 
-    for p in procedure:
-        if type(p) is list:
-            for pp in p:
-                if type(pp) is dict:
-                    if pp['inst'] is not None:
-                        print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].name}")
-                    else:
-                        print(f"BML: {pp['bml'].getName()}, None")
-                else:
-                    print(f"TRANS: {pp.getName()}")
-        else:
-            if type(p) is dict:
-                if p['mtp'] is not None:
-                    print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
-                else:
-                    print(f"BML: {p['bml'].getName()}, None")
-            else:
-                print(f"TRANS: {p.getName()}")
+    # for p in procedure:
+    #     if type(p) is list:
+    #         for pp in p:
+    #             if type(pp) is dict:
+    #                 if pp['inst'] is not None:
+    #                     print(f"BML: {pp['bml'].getName()}, MTP: {pp['mtp'].name}")
+    #                 else:
+    #                     print(f"BML: {pp['bml'].getName()}, None")
+    #             else:
+    #                 print(f"TRANS: {pp.getName()}")
+    #     else:
+    #         if type(p) is dict:
+    #             if p['mtp'] is not None:
+    #                 print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
+    #             else:
+    #                 print(f"BML: {p['bml'].getName()}, None")
+    #         else:
+    #             print(f"TRANS: {p.getName()}")
 
     return procedure
 
