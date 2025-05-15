@@ -10,6 +10,7 @@ TESTXML10 = r"Artefakte\Wabe10_Grundrezept.xml"
 TESTXML20 = r"Artefakte\Wabe20_Grundrezept.xml"
 TESTXML30 = r"Artefakte\Wabe30_Grundrezept.xml"
 TESTXMLALL = r"Artefakte\Wabe102030_Grundrezept.xml"
+TESTXMLFILL = r"Artefakte\Wabe10_Fuellen.xml"
 SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
@@ -603,7 +604,7 @@ def main() -> list[Element]:
     #xmlschema.validate(TESTXML10, SCHEMA)
 
     # parse b2mml file
-    tree = parse(TESTXMLALL)
+    tree = parse(TESTXMLFILL)
     root = tree.getroot()
 
     # create bml object

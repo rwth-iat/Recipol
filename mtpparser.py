@@ -231,7 +231,7 @@ class HMI:
 class Pea:
     def __init__(self):
         self.name = "" # name of the mtp
-        self.insts = [] # list of instances
+        self.insts:list[Instance] = [] # list of instances
         self.sensacts = [] # list of sensors and actuators
         self.procs = [] # list of procedures
         self.servs = [] # list of services
@@ -271,6 +271,14 @@ class Pea:
             if i.id == instId or i.refid == instId:
                 return i
 
+        return None
+
+    def getInstanceByName(self, instName:str) -> Instance:
+        """Returns the instance with the given name"""
+        for i in self.insts:
+            if i.name == instName:
+                return i
+        
         return None
 
     def addService(self, serv:Service) -> None:
@@ -2959,15 +2967,15 @@ def getMtps() -> list[Pea]:
                 mtp.sensacts.append(i)
 
         
-    for m in mtps:
-        print(m.name)
-        for s in m.servs:
-            print(s.name, s.id)
-            for p in s.procs:
-                print("  ", p.name, p.id)
-                for pa in p.params:
-                    print("    ", pa.name, pa.id, pa.default, pa.unit)
-            print("\n")
+    # for m in mtps:
+    #     print(m.name)
+    #     for s in m.servs:
+    #         print(s.name, s.id)
+    #         for p in s.procs:
+    #             print("  ", p.name, p.id)
+    #             for pa in p.params:
+    #                 print("    ", pa.name, pa.id, pa.default, pa.unit)
+    #         print("\n")
 
     # print("Services: ")
     # for s in mtp.servs:

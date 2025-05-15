@@ -7,6 +7,7 @@ procedure = []
 def getProcedure() -> list[dict]:
     sortedList = bml.main()
     mtps = mtp.getMtps()
+    thisMtp = None
     for elem in sortedList:
         # iterate over elements in list
         if type(elem) is not list:
@@ -51,8 +52,29 @@ def getProcedure() -> list[dict]:
                 else:
                     procedure.append({'bml': elem, 'mtp': thisMtp, 'inst': mInst, 'params': params})
             else:
-                # we don't have to match transitions to anything, simpy add
-                procedure.append(elem)
+                # sensor value
+                cond = elem.cond
+                if not cond.startswith("Step") and not cond.startswith("True"):
+                    kw = cond[:cond.find(" ")]
+                    cond = cond[cond.find(" ")+1:]
+                    instName = cond[:cond.find(" ")]
+                    # find instance
+                    if thisMtp is not None:
+                        inst = thisMtp.getInstanceByName(instName)
+                        if inst is None:
+                            # check other mtps
+                            for m in mtps:
+                                if m == thisMtp:
+                                    continue
+                                else:
+                                    inst = m.getInstanceByName(instName)
+                                    if inst is not None:
+                                        break
+                    procedure.append((elem, thisMtp))
+
+                else:
+                    # we don't have to match transitions to anything, simpy add
+                    procedure.append(elem)
         else:
             # create sublist
             sl = []
@@ -122,6 +144,8 @@ def getProcedure() -> list[dict]:
     #                 print(f"BML: {p['bml'].getName()}, MTP: {p['mtp'].name}")
     #             else:
     #                 print(f"BML: {p['bml'].getName()}, None")
+    #         elif type(p) is tuple:
+    #             print(f"TRANS: {p[0].getName()}, MTP: {p[1].name}")
     #         else:
     #             print(f"TRANS: {p.getName()}")
 

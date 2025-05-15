@@ -240,6 +240,19 @@ def checkCurrentState(opcurl:str, nsIndex:str, service:mtp.Service) -> int:
     # return the value
     return asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=service.paramElem['StateCur']['ID']))
 
+def readSensorValue(opcurl:str, nsIndex:str, sensor:mtp.Instance) -> Any:
+    # get the value of the sensor
+    if sensor.paramElem["V"]["ID"] is not None:
+        value = asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=sensor.paramElem["V"]["ID"]))
+    elif sensor.paramElem["VOut"]["ID"] is not None:
+        value = asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=sensor.paramElem["VOut"]["ID"]))
+    elif sensor.paramElem["Pos"]["ID"] is not None:
+        value = asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=sensor.paramElem["Pos"]["ID"]))
+    elif sensor.paramElem["Ctrl"]["ID"] is not None:
+        value = asyncio.run(readNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=sensor.paramElem["Ctrl"]["ID"]))
+
+    return value
+
 def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
     # gives an overview of the statuses of the services, sensors and actuators of the current pea
     statuses = [{"Name": "Time", "Value": time.localtime()}]
@@ -292,7 +305,6 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
     # create list of headers
     headers:list[str] = ["Time"]
     for m in mtps:
-        print(m.name)
         for s in m.servs:
             s: mtp.Service
             headers.append(f"{m.name}_{s.name}")
@@ -327,9 +339,9 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                                 p["mtp"].nsid = asyncio.run(getNamespaceId(opcurl=url, ns=ns))
                             nsid = p["mtp"].nsid
                             #ns = asyncio.run(getNamespace(opcurl=url))
-                        service = p['mtp'].getService(p['inst'].serviceId)
-                        procedure = p['inst']
-                        params = p['params']
+                        service:mtp.Service = p['mtp'].getService(p['inst'].serviceId)
+                        procedure:mtp.Procedure = p['inst']
+                        params:list[mtp.Instance] = p['params']
 
                         # set service to automatic mode
                         setOperationMode(opcurl=url, mode="aut", nsIndex=nsid, service=service)
@@ -385,6 +397,8 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                                         else:
                                             rowToWrite.append(s["Value"])
                                         break
+                                else:
+                                    rowToWrite.append("NaN")
                             writer.writerow(rowToWrite)
 
                         # for s in statuses:
@@ -395,7 +409,10 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
-                    cond: str = p.cond
+                    if type(p) is tuple:
+                        cond:str = p[0].cond
+                    else:
+                        cond: str = p.cond
                     if cond != "True":
                         if "AND" in cond or "OR" in cond or "NOT" in cond:
                             # To do 
@@ -416,8 +433,38 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         # move on
                         pass
                     elif kw == "Level":
-                        # to do
-                        pass
+                        # get sensor instance
+                        sens = p[1].getInstanceByName(inst)
+                        # get sensor value
+                        sensval = readSensorValue(url, nsid, sens)
+                        match(op):
+                            case ">=":
+                                while(sensval < float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case ">":
+                                while(sensval <= float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case "==":
+                                while(sensval != float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case "<=":
+                                while(sensval > float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case "<":
+                                while(sensval >= float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                        if procedure.compl:
+                            # procedure is self completing, stop service
+                            stopService(url, "aut", nsid, service)
+                        else:
+                            # complete service
+                            completeService(url, "aut", nsid, service)
+                        while True:
+                            state = checkCurrentState(opcurl=url, nsIndex=nsid, service=service)
+                            if state == 131072 or state == 4:
+                                break
+                        # reset service
+                        resetService(url, "aut", service)
                     elif kw == "Temp":
                         # to do
                         pass
