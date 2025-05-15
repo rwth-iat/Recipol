@@ -310,7 +310,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                     # transition in a parallel function
                     pass
             else:
-                seq.drawSequenceDiagram(p, proc)
+                # seq.drawSequenceDiagram(p, proc)
                 if type(p) is dict:
                     # simple step
                     if p['inst'] is None:
@@ -366,26 +366,26 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         time.sleep(0.5)
 
                         # status monitoring
-                        # statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
+                        statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
 
-                        # with open('DataHistory.csv', 'r', newline='') as csvfile:
-                        #     reader = csv.reader(csvfile)
-                        #     flag = len(list(reader))
+                        with open('DataHistory.csv', 'r', newline='') as csvfile:
+                            reader = csv.reader(csvfile)
+                            flag = len(list(reader))
                         
-                        # with open('DataHistory.csv', 'a', newline='') as csvfile:
-                        #     writer = csv.writer(csvfile)
-                        #     if flag == 0:
-                        #         writer.writerow(headers)
-                        #     rowToWrite = []
-                        #     for head in headers:
-                        #         for s in statuses:
-                        #             if s["Name"] == head:
-                        #                 if head == "Time":
-                        #                     rowToWrite.append(time.asctime(s["Value"]))
-                        #                 else:
-                        #                     rowToWrite.append(s["Value"])
-                        #                 break
-                        #     writer.writerow(rowToWrite)
+                        with open('DataHistory.csv', 'a', newline='') as csvfile:
+                            writer = csv.writer(csvfile)
+                            if flag == 0:
+                                writer.writerow(headers)
+                            rowToWrite = []
+                            for head in headers:
+                                for s in statuses:
+                                    if s["Name"] == head:
+                                        if head == "Time":
+                                            rowToWrite.append(time.asctime(s["Value"]))
+                                        else:
+                                            rowToWrite.append(s["Value"])
+                                        break
+                            writer.writerow(rowToWrite)
 
                         # for s in statuses:
                         #     if "Status" in s:
