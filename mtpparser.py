@@ -2,7 +2,7 @@ from defusedxml.ElementTree import parse
 
 ### static variables
 TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
-TESTMTP2 = r"Artefakte\HC2040_new_new.aml"
+TESTMTP2 = r"Artefakte\HC2040_new.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
 TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3]
 NAMESPACE = "{http://www.dke.de/CAEX}"
@@ -2963,11 +2963,11 @@ def getMtps() -> list[Pea]:
     #     print(m.name)
     #     for s in m.servs:
     #         print(s.name, s.id)
-            # for p in s.procs:
-            #     print("  ", p.name, p.id)
-            #     for pa in p.params:
-            #         print("    ", pa.name, pa.id, pa.default, pa.unit)
-            # print("\n")
+    #         for p in s.procs:
+    #             print("  ", p.name, p.id)
+    #             for pa in p.params:
+    #                 print("    ", pa.name, pa.id, pa.default, pa.unit)
+    #         print("\n")
 
     # print("Services: ")
     # for s in mtp.servs:

@@ -108,11 +108,15 @@ async def readNodeValue(opcurl:str, nsIndex:str, nodeAddress:str) -> Any:
     
 def changeParameterValue(opcurl:str, mode:str, nsIndex:str, service:mtp.Service, param:mtp.Instance, value:Any) -> None:
     if mode == "op":
+        # set source to operator mode
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['StateOpOp']['ID'], value=1))
         # set value in operator mode
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['VOp']['ID'], value=value))
         # apply parameter changes
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['ApplyOp']['ID'], value=1))
     elif mode == "aut":
+        # set source to automatic mode
+        asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['StateAutOp']['ID'], value=1))
         # set value in automatic mode
         asyncio.run(writeNodeValue(opcurl=opcurl, nsIndex=nsIndex, nodeAddress=param.paramElem['VExt']['ID'], value=value))
         # apply parameter changes
