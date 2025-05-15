@@ -283,12 +283,12 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         r:  bml.Requirement
                         # check by operator
                         material = r.const[r.const.rfind("=")+1:]
-                        ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
-                        if ack.lower() == "y":
-                            continue
-                        else:
-                            matFlag = False
-                            return
+                        # ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
+                        # if ack.lower() == "y":
+                        #     continue
+                        # else:
+                        #     matFlag = False
+                        #     return
     # create list of headers
     headers:list[str] = ["Time"]
     for m in mtps:
@@ -310,7 +310,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                     # transition in a parallel function
                     pass
             else:
-                #seq.drawSequenceDiagram(p, proc)
+                seq.drawSequenceDiagram(p, proc)
                 if type(p) is dict:
                     # simple step
                     if p['inst'] is None:
@@ -330,9 +330,6 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         service = p['mtp'].getService(p['inst'].serviceId)
                         procedure = p['inst']
                         params = p['params']
-
-                        # set os level
-                        # setOSLevel(opcurl=url, nsIndex=nsid, service=service)
 
                         # set service to automatic mode
                         setOperationMode(opcurl=url, mode="aut", nsIndex=nsid, service=service)
