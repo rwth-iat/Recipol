@@ -464,7 +464,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                             if state == 131072 or state == 4:
                                 break
                         # reset service
-                        resetService(url, "aut", service)
+                        resetService(url, "aut", nsid, service)
                     elif kw == "Temp":
                         # to do
                         pass

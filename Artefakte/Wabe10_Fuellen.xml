@@ -141,7 +141,7 @@
 			<b2mml:Transition>
 				<!--!!describes a single instance of a transition -->
 				<b2mml:ID>T2</b2mml:ID>
-				<b2mml:Condition>Level HC10_L11 >= 10</b2mml:Condition>
+				<b2mml:Condition>Level HC10_L11 >= 19</b2mml:Condition>
 				<!--b2mml:ConditionAnnotation>normalizedString</b2mml:ConditionAnnotation-->
 				<!--b2mml:Description>string</b2mml:Description-->
 			</b2mml:Transition>
