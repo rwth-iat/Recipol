@@ -1597,7 +1597,11 @@ def getMtps() -> list[Pea]:
                             if node.get("Name") == "InstanceList" or node.get("Name") == "Instances":
                                 # parse instances
                                 for instNode in node.iter(f"{NAMESPACE}InternalElement"):
-                                    if instNode.get("Name") == "InstanceList" or instNode.get("Name") == "Instances":
+                                    if (instNode.get("Name") == "InstanceList" or 
+                                        instNode.get("Name") == "Instances" or
+                                        instNode.get("RefBaseSystemUnitPath") == "MTPDataObjectSUCLib/DataAssembly/PeaElement/PeaInformationLabel" or
+                                        instNode.get("RefBaseSystemUnitPath") == "MTPDataObjectSUCLib/DataAssembly/PeaElement/WebServerUrlInfo" or
+                                        instNode.get("RefBaseSystemUnitPath") == "MTPDataObjectSUCLib/DataAssembly/ServiceElement/ProcedureHealthView"):
                                         continue
                                     inst = Instance(name=instNode.get("Name"), id=instNode.get("ID"))
 
