@@ -32,6 +32,10 @@ def getUaType(dtype:str) -> ua.VariantType:
         
 def getStateByEncoding(code:int) -> str:
     match(code):
+        case 1:
+            return "Not used"
+        case 2:
+            return  "Not used"
         case 4:
             return "Stopped"
         case 8:
@@ -64,6 +68,8 @@ def getStateByEncoding(code:int) -> str:
             return "Completing"
         case 131072:
             return "Completed"
+        case _:
+            return "Illegal state"
 
 async def getNamespaceId(opcurl:str, ns:str) -> int:
     client = Client(url=opcurl)
