@@ -2,7 +2,7 @@ from defusedxml.ElementTree import parse
 
 ### static variables
 TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
-TESTMTP2 = r"Artefakte\HC2040_new.aml"
+TESTMTP2 = r"Artefakte\HC2040_new_old.aml"
 TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
 TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3]
 NAMESPACE = "{http://www.dke.de/CAEX}"
@@ -69,6 +69,8 @@ class Instance:
                           'ConfigParamApplyInt': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'ReportValueFreeze': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'Ctrl': {'Type': 'REAL', 'ID': None, 'Default': None},
+                          'FwdCtrl': {'Type': 'BOOL', 'ID': None, 'Default': None},
+                          'RevCtrl': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'V': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VExt': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VOp': {'Type': 'REAL', 'ID': None, 'Default': None},
@@ -1894,6 +1896,16 @@ def getMtps() -> list[Pea]:
                                             id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
                                             inst.paramElem['Ctrl']['ID'] = id
                                             inst.paramElem['Ctrl']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                        elif attrNode.get("Name") == "FwdCtrl":
+                                            elemNode = attrNode.findtext(f"{NAMESPACE}Value")
+                                            id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
+                                            inst.paramElem['FwdCtrl']['ID'] = id
+                                            inst.paramElem['FwdCtrl']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
+                                        elif attrNode.get("Name") == "RevCtrl":
+                                            elemNode = attrNode.findtext(f"{NAMESPACE}Value")
+                                            id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
+                                            inst.paramElem['RevCtrl']['ID'] = id
+                                            inst.paramElem['RevCtrl']['Default'] = attrNode.findtext(f"{NAMESPACE}DefaultValue")
                                         elif attrNode.get("Name") == "VSclMin":
                                             elemNode = attrNode.findtext(f"{NAMESPACE}Value")
                                             id = gchild.findtext(f".//{NAMESPACE}ExternalInterface[@ID='{elemNode}']/{NAMESPACE}Attribute[@Name='Identifier']/{NAMESPACE}Value")
@@ -2970,7 +2982,7 @@ def getMtps() -> list[Pea]:
             if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
                 mtp.sensacts.append(i)
 
-        
+    ## debugging only
     # for m in mtps:
     #     print(m.name)
     #     for s in m.servs:
@@ -2981,6 +2993,7 @@ def getMtps() -> list[Pea]:
     #                 print("    ", pa.name, pa.id, pa.default, pa.unit)
     #         print("\n")
 
+    ## debugging only
     # print("Services: ")
     # for s in mtp.servs:
     #     print(s.name)

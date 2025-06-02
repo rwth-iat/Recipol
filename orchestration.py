@@ -102,32 +102,33 @@ def getProcedure() -> list[dict]:
 
     # user check before continuation
     i = 0
-    # for p in procedure:
-    #     if i == 0:
-    #         print("     _ _    ")
-    #         i += 1
-    #     if type(p) is list:
-    #         if type(p[0]) is dict:
-    #             print("     |")
-    #             print("  _______")
-    #             print(" |       |")
-    #             print(" |       |")
-    #             print(" |_______|")
-    #     else:
-    #         if type(p) is dict:
-    #             name = p['bml'].getName()
-    #             namelen = len(name)
-    #             print("  ____|____")
-    #             print(" |         |")
-    #             while namelen > 0:
-    #                 print(f" | {name[:7]: <7} |")
-    #                 name = name[7:]
-    #                 namelen = namelen -7
-    #             print(" |_________|")
-    #             print("     _|_")
-    #         else:
-    #             print(f"    |___| - {p.getCond()}")
+    for p in procedure:
+        if i == 0:
+            print("     _ _    ")
+            i += 1
+        if type(p) is list:
+            if type(p[0]) is dict:
+                print("     |")
+                print("  _______")
+                print(" |       |")
+                print(" |       |")
+                print(" |_______|")
+        else:
+            if type(p) is dict:
+                name = p['bml'].getName()
+                namelen = len(name)
+                print("  ____|____")
+                print(" |         |")
+                while namelen > 0:
+                    print(f" | {name[:7]: <7} |")
+                    name = name[7:]
+                    namelen = namelen -7
+                print(" |_________|")
+                print("     _|_")
+            else:
+                print(f"    |___| - {p.getCond()}")
 
+    ## for debugging only
     # for p in procedure:
     #     if type(p) is list:
     #         for pp in p:
