@@ -89,6 +89,7 @@ class Resource:
     def __init__(self, id:str):
         self.id = id # the id of the resource
         self.skills = [] # the procedures of the resource
+        # To Do: add connections to other resources
 
     def __str__(self):
         return f"ID: {self.id}, Procedures: {','.join(s.id for s in self.skills)}"
