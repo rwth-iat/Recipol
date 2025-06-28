@@ -585,7 +585,7 @@ if __name__ == "__main__":
 
     # operator sequence check
     print("\n" * 3)
-    ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
+    ack = input("Please enter 'y' if you want to continue with the above procedure, press any other key to stop: ")
 
     if ack.lower() == "y":
         main(procedure, mtps)
