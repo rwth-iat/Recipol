@@ -89,6 +89,7 @@ class Resource:
     def __init__(self, id:str):
         self.id = id # the id of the resource
         self.skills = [] # the procedures of the resource
+        # To Do: add connections to other resources
 
     def __str__(self):
         return f"ID: {self.id}, Procedures: {','.join(s.id for s in self.skills)}"
@@ -601,7 +602,7 @@ def sortElements(bml:Bml) -> list[Element]:
 ### start main
 def main() -> list[Element]:
     # validate b2mml file
-    #xmlschema.validate(TESTXML10, SCHEMA)
+    xmlschema.validate(TESTXMLALL, SCHEMA)
 
     # parse b2mml file
     tree = parse(TESTXMLALL)

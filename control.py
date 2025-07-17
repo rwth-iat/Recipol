@@ -32,6 +32,10 @@ def getUaType(dtype:str) -> ua.VariantType:
         
 def getStateByEncoding(code:int) -> str:
     match(code):
+        case 1:
+            return "Not used"
+        case 2:
+            return  "Not used"
         case 4:
             return "Stopped"
         case 8:
@@ -64,6 +68,8 @@ def getStateByEncoding(code:int) -> str:
             return "Completing"
         case 131072:
             return "Completed"
+        case _:
+            return "Illegal state"
 
 async def getNamespaceId(opcurl:str, ns:str) -> int:
     client = Client(url=opcurl)
@@ -277,6 +283,15 @@ def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
                 statuses.append({"Name": f"{pea.name}_{sa.name}", "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Pos"]["ID"]))})
             elif sa.paramElem["Ctrl"]["ID"] is not None:
                 statuses.append({"Name": f"{pea.name}_{sa.name}", "ID": sa.id, "Value": asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["Ctrl"]["ID"]))})
+            elif sa.paramElem["FwdCtrl"]["ID"] is not None:
+                fwdval = asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["FwdCtrl"]["ID"]))
+                revval = asyncio.run(readNodeValue(opcurl=url, nsIndex=idx, nodeAddress=sa.paramElem["RevCtrl"]["ID"]))
+                if fwdval == True or fwdval == 1:
+                    statuses.append({"Name": f"{pea.name}_{sa.name}", "ID": sa.id, "Value": "1"})
+                elif revval == True or revval == 1:
+                    statuses.append({"Name": f"{pea.name}_{sa.name}", "ID": sa.id, "Value": "-1"})
+                else:
+                    statuses.append({"Name": f"{pea.name}_{sa.name}", "ID": sa.id, "Value": "0"})
 
     return statuses
 
@@ -296,12 +311,12 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         r:  bml.Requirement
                         # check by operator
                         material = r.const[r.const.rfind("=")+1:]
-                        # ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
-                        # if ack.lower() == "y":
-                        #     continue
-                        # else:
-                        #     matFlag = False
-                        #     return
+                        ack = input(f"Step {p['bml'].name} only allows {material}. Please ensure that only {material} is used. Press 'y' to continue, press any other key to terminate.")
+                        if ack.lower() == "y":
+                            continue
+                        else:
+                            matFlag = False
+                            return
     # create list of headers
     headers:list[str] = ["Time"]
     for m in mtps:
@@ -316,13 +331,16 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
         for p in proc:
             if type(p) is list:
                 if type(p[0]) is dict:
-                    # step in a parallel function
+                    # To Do: step in a parallel function
                     pass
                 else:
-                    # transition in a parallel function
+                    # To Do: transition in a parallel function
                     pass
             else:
-                # seq.drawSequenceDiagram(p, proc)
+                # draw sequence diagram
+                seq.drawSequenceDiagram(p, proc)
+
+                # execute step
                 if type(p) is dict:
                     # simple step
                     if p['inst'] is None:
@@ -378,34 +396,28 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         time.sleep(0.5)
 
                         # status monitoring
-                        # statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
+                        statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
 
-                        # with open('DataHistory.csv', 'r', newline='') as csvfile:
-                        #     reader = csv.reader(csvfile)
-                        #     flag = len(list(reader))
+                        with open('DataHistory.csv', 'r', newline='') as csvfile:
+                            reader = csv.reader(csvfile)
+                            flag = len(list(reader))
                         
-                        # with open('DataHistory.csv', 'a', newline='') as csvfile:
-                        #     writer = csv.writer(csvfile)
-                        #     if flag == 0:
-                        #         writer.writerow(headers)
-                        #     rowToWrite = []
-                        #     for head in headers:
-                        #         for s in statuses:
-                        #             if s["Name"] == head:
-                        #                 if head == "Time":
-                        #                     rowToWrite.append(time.asctime(s["Value"]))
-                        #                 else:
-                        #                     rowToWrite.append(s["Value"])
-                        #                 break
-                        #         else:
-                        #             rowToWrite.append("NaN")
-                        #     writer.writerow(rowToWrite)
-
-                        # for s in statuses:
-                        #     if "Status" in s:
-                        #         print(f"Name: {s['Name']}, Status: {s['Status']}")
-                        #     else:
-                        #         print(f"Name: {s['Name']}, Current Value: {s['CurrVal']}")
+                        with open('DataHistory.csv', 'a', newline='') as csvfile:
+                            writer = csv.writer(csvfile)
+                            if flag == 0:
+                                writer.writerow(headers)
+                            rowToWrite = []
+                            for head in headers:
+                                for s in statuses:
+                                    if s["Name"] == head:
+                                        if head == "Time":
+                                            rowToWrite.append(time.asctime(s["Value"]))
+                                        else:
+                                            rowToWrite.append(s["Value"])
+                                        break
+                                else:
+                                    rowToWrite.append("NaN")
+                            writer.writerow(rowToWrite)
                 else:
                     # simple transition
                     # fetch keyword, instance, operator and value
@@ -467,30 +479,40 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         resetService(url, "aut", nsid, service)
                     elif kw == "Temp":
                         # to do
-                        pass
+                        # get sensor instance
+                        sens = p[1].getInstanceByName(inst)
+                        # get sensor value
+                        sensval = readSensorValue(url, nsid, sens)
+                        match(op):
+                            case ">=":
+                                while(sensval < float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case ">":
+                                while(sensval <= float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case "==":
+                                while(sensval != float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case "<=":
+                                while(sensval > float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                            case "<":
+                                while(sensval >= float(value)):
+                                    sensval = readSensorValue(url, nsid, sens)
+                        if procedure.compl:
+                            # procedure is self completing, stop service
+                            stopService(url, "aut", nsid, service)
+                        else:
+                            # complete service
+                            completeService(url, "aut", nsid, service)
+                        while True:
+                            state = checkCurrentState(opcurl=url, nsIndex=nsid, service=service)
+                            if state == 131072 or state == 4:
+                                break
+                        # reset service
+                        resetService(url, "aut", nsid, service)
                     elif kw == "Material":
                         # already checked, move on
-                        pass
-                    elif kw == "Dens":
-                        # to do
-                        pass
-                    elif kw == "Flow":
-                        # to do
-                        pass
-                    elif kw == "Dist":
-                        # to do
-                        pass
-                    elif kw == "Time":
-                        # to do
-                        pass
-                    elif kw == "Pressure":
-                        # to do
-                        pass
-                    elif kw == "Speed":
-                        # to do
-                        pass
-                    elif kw == "Weight":
-                        # to do
                         pass
                     elif kw == "Step":
                         # fetch the step
@@ -561,10 +583,9 @@ if __name__ == "__main__":
 
     procedure = oc.getProcedure()
 
-    # print("\n" * 3)
-    # ack = input("Please press 'y' if you want to continue with the above procedure, press any other key to stop: ")
+    # operator sequence check
+    print("\n" * 3)
+    ack = input("Please enter 'y' if you want to continue with the above procedure, press any other key to stop: ")
 
-    # if ack.lower() == "y":
-    #     main(procedure, mtps)
-
-    main(procedure, mtps)
+    if ack.lower() == "y":
+        main(procedure, mtps)

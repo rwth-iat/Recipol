@@ -42,7 +42,7 @@ def getProcedure() -> list[dict]:
                                     raise RuntimeError(f"Invalid unit for parameter {mParam.name}. Expected {mParam.unitval}, received {p.unit}.")
                             elif p.unit.lower() != mParam.unit.lower() and mParam.unit != "Maßeinheit nicht bekannt":
                                 raise RuntimeError(f"Invalid unit for parameter {mParam.name}. Expected {mParam.unit}, received {p.unit}.")
-                            elif float(p.value) < mParam.min or float(p.value) > mParam.max:
+                            if float(p.value) < mParam.min or float(p.value) > mParam.max:
                                 raise RuntimeError(f"Invalid value for parameter {mParam.name}. The value has to be within {mParam.min,mParam.max}")
                             params.append((mParam, p.value))                        
                 
@@ -102,32 +102,33 @@ def getProcedure() -> list[dict]:
 
     # user check before continuation
     i = 0
-    # for p in procedure:
-    #     if i == 0:
-    #         print("     _ _    ")
-    #         i += 1
-    #     if type(p) is list:
-    #         if type(p[0]) is dict:
-    #             print("     |")
-    #             print("  _______")
-    #             print(" |       |")
-    #             print(" |       |")
-    #             print(" |_______|")
-    #     else:
-    #         if type(p) is dict:
-    #             name = p['bml'].getName()
-    #             namelen = len(name)
-    #             print("  ____|____")
-    #             print(" |         |")
-    #             while namelen > 0:
-    #                 print(f" | {name[:7]: <7} |")
-    #                 name = name[7:]
-    #                 namelen = namelen -7
-    #             print(" |_________|")
-    #             print("     _|_")
-    #         else:
-    #             print(f"    |___| - {p.getCond()}")
+    for p in procedure:
+        if i == 0:
+            print("     _ _    ")
+            i += 1
+        if type(p) is list:
+            if type(p[0]) is dict:
+                print("     |")
+                print("  _______")
+                print(" |       |")
+                print(" |       |")
+                print(" |_______|")
+        else:
+            if type(p) is dict:
+                name = p['bml'].getName()
+                namelen = len(name)
+                print("  ____|____")
+                print(" |         |")
+                while namelen > 0:
+                    print(f" | {name[:7]: <7} |")
+                    name = name[7:]
+                    namelen = namelen -7
+                print(" |_________|")
+                print("     _|_")
+            else:
+                print(f"    |___| - {p.getCond()}")
 
+    ## for debugging only
     # for p in procedure:
     #     if type(p) is list:
     #         for pp in p:
