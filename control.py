@@ -7,6 +7,7 @@ import mtpparser as mtp
 import csv
 import b2mmlparser as bml
 import sequenz as seq
+import os.path
 
 ### global variables
 #url = "opc.tcp://192.168.0.10:4840"
@@ -297,6 +298,7 @@ def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
 
 def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]], mtps:list[mtp.Pea]):
     matFlag = True
+    firstStepFlag = True
     # preliminary check for material requirements
     for p in proc:
         if type(p) is list:
@@ -398,14 +400,14 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                         # status monitoring
                         statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
 
-                        with open('DataHistory.csv', 'r', newline='') as csvfile:
-                            reader = csv.reader(csvfile)
-                            flag = len(list(reader))
+                        # create filename with current timestamp
+                        filename = f"Datahistory\\log_{time.strftime('%d-%m-%Y_%H-%M-%S')}"
                         
-                        with open('DataHistory.csv', 'a', newline='') as csvfile:
+                        with open(filename, 'a', newline='') as csvfile:
                             writer = csv.writer(csvfile)
-                            if flag == 0:
+                            if firstStepFlag == True:
                                 writer.writerow(headers)
+                                firstStepFlag = False
                             rowToWrite = []
                             for head in headers:
                                 for s in statuses:
