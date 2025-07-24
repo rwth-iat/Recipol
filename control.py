@@ -297,8 +297,13 @@ def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
     return statuses
 
 def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]], mtps:list[mtp.Pea]):
+    # initial flags
     matFlag = True
     firstStepFlag = True
+
+    # create filename with current timestamp
+    filename = f"Datahistory\\log_{time.strftime('%d-%m-%Y_%H-%M-%S')}"
+
     # preliminary check for material requirements
     for p in proc:
         if type(p) is list:
@@ -399,9 +404,6 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
 
                         # status monitoring
                         statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
-
-                        # create filename with current timestamp
-                        filename = f"Datahistory\\log_{time.strftime('%d-%m-%Y_%H-%M-%S')}"
                         
                         with open(filename, 'a', newline='') as csvfile:
                             writer = csv.writer(csvfile)
