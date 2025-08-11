@@ -302,7 +302,7 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
     firstStepFlag = True
 
     # create filename with current timestamp
-    filename = f"Datahistory\\log_{time.strftime('%d-%m-%Y_%H-%M-%S')}"
+    filename = f"Datahistory\\log_{time.strftime('%d-%m-%Y_%H-%M-%S')}.csv"
 
     # preliminary check for material requirements
     for p in proc:
