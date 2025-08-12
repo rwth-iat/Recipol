@@ -540,18 +540,26 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                             while(True):
                                 if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 131072:
                                     break
-                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 32:
-                                    # resume
-                                    resumeService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
-                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 2048:
-                                    # unhold
-                                    unholdService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 4:
+                                    # user check
+                                    inp = input(f"Step {step.name} has STOPPED. Reset? y/n")
+                                    if inp.lower() == "y":
+                                        resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                    return
+                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 512:
+                                    # user check
+                                    inp = input(f"Step {step.name} has ABORTED. Reset? y/n")
+                                    if inp.lower() == "y":
+                                        resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                    return
                             # reset state
                             resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
 
                             # set all parameters to default
                             params = []
-                            for par in step['inst'].params:
+                            # for par in step['inst'].params:
+                            #     changeParameterValue(opcurl=url, mode="aut", nsIndex=nsid, service=service, param=par, value=int(par.default))
+                            for par in params:
                                 changeParameterValue(opcurl=url, mode="aut", nsIndex=nsid, service=service, param=par, value=int(par.default))
                         elif value == "Stopped":
                             while(True):
