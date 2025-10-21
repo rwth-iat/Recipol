@@ -1,0 +1,9 @@
+b2mml_recipe: "Artefakte/Wabe102030_Grundrezept.xml"
+mtp_modules:
+  - "Artefakte/PEA_A.aml"
+  - "Artefakte/PEA_B.aml"
+schemas_root: "Schemas"
+opcua:
+  default_endpoint: "opc.tcp://127.0.0.1:4840"
+  default_namespace_hint: 4
+log_csv: "DataHistory.csv"
