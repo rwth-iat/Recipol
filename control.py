@@ -7,6 +7,7 @@ import mtpparser as mtp
 import csv
 import b2mmlparser as bml
 import sequenz as seq
+import os.path
 
 ### global variables
 #url = "opc.tcp://192.168.0.10:4840"
@@ -296,7 +297,13 @@ def statusMonitoring(peas:list[mtp.Pea], url:str, idx:str) -> list[dict]:
     return statuses
 
 def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]], mtps:list[mtp.Pea]):
+    # initial flags
     matFlag = True
+    firstStepFlag = True
+
+    # create filename with current timestamp
+    filename = f"Datahistory\\log_{time.strftime('%d-%m-%Y_%H-%M-%S')}.csv"
+
     # preliminary check for material requirements
     for p in proc:
         if type(p) is list:
@@ -397,15 +404,12 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
 
                         # status monitoring
                         statuses = statusMonitoring(peas=mtps, url=url, idx=nsid)
-
-                        with open('DataHistory.csv', 'r', newline='') as csvfile:
-                            reader = csv.reader(csvfile)
-                            flag = len(list(reader))
                         
-                        with open('DataHistory.csv', 'a', newline='') as csvfile:
+                        with open(filename, 'a', newline='') as csvfile:
                             writer = csv.writer(csvfile)
-                            if flag == 0:
+                            if firstStepFlag == True:
                                 writer.writerow(headers)
+                                firstStepFlag = False
                             rowToWrite = []
                             for head in headers:
                                 for s in statuses:
@@ -536,18 +540,26 @@ def main(proc:list[dict[bml.Element, mtp.Pea, mtp.Procedure, list[mtp.Instance]]
                             while(True):
                                 if checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 131072:
                                     break
-                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 32:
-                                    # resume
-                                    resumeService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
-                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 2048:
-                                    # unhold
-                                    unholdService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 4:
+                                    # user check
+                                    inp = input(f"Step {step.name} has STOPPED. Reset? y/n")
+                                    if inp.lower() == "y":
+                                        resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                    return
+                                elif checkCurrentState(opcurl=url, nsIndex=nsid, service=service) == 512:
+                                    # user check
+                                    inp = input(f"Step {step.name} has ABORTED. Reset? y/n")
+                                    if inp.lower() == "y":
+                                        resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
+                                    return
                             # reset state
                             resetService(opcurl=url, mode="aut", nsIndex=nsid, service=service)
 
                             # set all parameters to default
                             params = []
-                            for par in step['inst'].params:
+                            # for par in step['inst'].params:
+                            #     changeParameterValue(opcurl=url, mode="aut", nsIndex=nsid, service=service, param=par, value=int(par.default))
+                            for par in params:
                                 changeParameterValue(opcurl=url, mode="aut", nsIndex=nsid, service=service, param=par, value=int(par.default))
                         elif value == "Stopped":
                             while(True):

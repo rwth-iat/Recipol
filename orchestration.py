@@ -128,6 +128,11 @@ def getProcedure() -> list[dict]:
             else:
                 print(f"    |___| - {p.getCond()}")
 
+    # for p in procedure:
+    #     if type(p) is dict:
+    #         for param in p["params"]:
+    #             print(param[0].name, param[0].default)
+
     ## for debugging only
     # for p in procedure:
     #     if type(p) is list:
