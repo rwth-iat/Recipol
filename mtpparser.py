@@ -1,10 +1,10 @@
 from defusedxml.ElementTree import parse
 
 ### static variables
-TESTMTP1 = r"Artefakte\HC10_manifest_new.aml"
-TESTMTP2 = r"Artefakte\HC2040_new_old.aml"
-TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
-TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3]
+TESTMTP1 = r"Artefakte\HC10_2025-04-25.aml"
+TESTMTP2 = r"Artefakte\HC20HC40_2025-05-07.aml"
+#TESTMTP3 = r"Artefakte\HC30_manifest_new.aml"
+TESTMTPS = [TESTMTP1, TESTMTP2]
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### classes

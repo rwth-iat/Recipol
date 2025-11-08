@@ -10,7 +10,7 @@ TESTXML10 = r"Artefakte\Wabe10_Grundrezept.xml"
 TESTXML20 = r"Artefakte\Wabe20_Grundrezept.xml"
 TESTXML30 = r"Artefakte\Wabe30_Grundrezept.xml"
 TESTXMLALL = r"Artefakte\Wabe102030_Grundrezept.xml"
-TESTXMLFILL = r"Artefakte\Wabe10_Fuellen.xml"
+TESTXMLNEW = r"Artefakte\Wabe2010_GrundrezeptStirrDoseHeiz.xml"
 SCHEMA = r"Schemas\AllSchemas.xsd"
 NAMESPACE = "{http://www.mesa.org/xml/B2MML}"
 
@@ -602,10 +602,10 @@ def sortElements(bml:Bml) -> list[Element]:
 ### start main
 def main() -> list[Element]:
     # validate b2mml file
-    xmlschema.validate(TESTXMLALL, SCHEMA)
+    xmlschema.validate(TESTXMLNEW, SCHEMA)
 
     # parse b2mml file
-    tree = parse(TESTXMLALL)
+    tree = parse(TESTXMLNEW)
     root = tree.getroot()
 
     # create bml object

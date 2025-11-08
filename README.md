@@ -1,6 +1,6 @@
 # Recipol
 
-Recipol is an open-source Process Orchestration Layer (POL) enabling the execution of standardized and formalized process descriptions (master recipes in BatchML, an XML-Schema according to ISA-88 - Batch Control) in modular plants using the Capability–Skill–Service (CSS) model and Module Type Package (MTP).
+Recipol is an open-source Process Orchestration Layer (POL) enabling the execution of standardized and formalized process descriptions (master recipes in BatchML, an XML-Schema according to ISA-88 - Batch Control) in modular plants using the Capability–Skill–Service (CSS) model and Module Type Package (MTP). 
 Recipol was developed at the Chair of Information and Automation Systems (IAT), RWTH Aachen University based on:
 * _Winter, Michael; Eve, Alicia; Schmetz, Benedikt; Kleinert, Tobias (2025): A POL for Modular Plants using Capabilities in Master Recipes. In: 1st IFAC Workshop on Engineering and Architectures of Automation Systems (EAAS 2025), Padova, Italy._
 
@@ -9,7 +9,7 @@ Recipol was developed at the Chair of Information and Automation Systems (IAT), 
 - **MTP Interface**: The MTP files are imported as AML (Automation Markup Language) files, a neutral data format based on XML. The MTP interface translates this information into a data structure interpreted by the remaining POL software modules to extract services, procedures, parameters, sensing/actuation interfaces, and OPC UA connectivity metadata.
 - **OPC UA Connectivity**: Communication between the POL and the PEAs (Process Equipment Assemblies) is realized via OPC UA. Each PEA hosts an OPC UA server on its respective PLC, which is accessed by the POL to enable process control. To facilitate this connectivity, an OPC UA client is implemented within the POL.
 - **Process Monitoring**: The current states of the services and signal values of the PEAs, as defined in the MTP file, are queried and continuously monitored. Additionally, an interface is provided to allow external applications — such as graphical user interfaces (which are not part of the currently developed POL) — to retrieve these signals.
-- **Monitoring of Process Sequence Execution**: The execution of the process sequence is visualized as a graphical representation, such as a sequence diagram, on the command line.
+- **Monitoring of Process Sequence Execution**: The execution of the process sequence is visualized as a graphical representation, such as a sequence diagram, on the command line. 
 - **HMI Integration**: The MTP files contain graphical information for the creation of an operator interface, typically in the form of a piping and instrumentation diagram (P&ID). An interface has been implemented to extract and preprocess this information for integration into an HMI.
 - **Sequence Diagram**: Records MTP service states and sensor values in `DataHistory.csv` and prints ASCII sequence diagrams for the operator on the command line.
 - **Process Orchestration and Execution**: Process orchestration is achieved by verifying the alignment between the process steps defined in the recipe and the IDs specified in the MTP files. Once the sequence has been validated, execution is initiated via OPC UA, triggering the corresponding modules.
