@@ -1,3 +1,0 @@
-1. To be fixed:MasterRecipe_Sol_42.xml这里面的dosing的parameter只给了个速率，没给dosing的时长啊，那个recipol的源代码执行到这里也是跳过了
-2. Wabe2010_GrundrezeptStirrDoseHeiz.xml这个配方基本能用，看一下为啥dosing时长那么短。
-3. 每次改recipe的parameter值，都需要重启下modular plant的PLCs，这样才能生效，不然用的是老的值，只在recipe里更改，只重新启动UI不行。

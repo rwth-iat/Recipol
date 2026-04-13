@@ -51,7 +51,7 @@
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
 				<b2mml:Value>
-					<b2mml:ValueString>5</b2mml:ValueString>
+					<b2mml:ValueString>10</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>duration</b2mml:DataType>
 					<b2mml:UnitOfMeasure>Sekunde</b2mml:UnitOfMeasure>
@@ -62,7 +62,7 @@
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
 				<b2mml:Value>
-					<b2mml:ValueString>100</b2mml:ValueString>
+					<b2mml:ValueString>300</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>integer</b2mml:DataType>
 					<b2mml:UnitOfMeasure>Liter pro Stunde</b2mml:UnitOfMeasure>
@@ -73,7 +73,7 @@
 				<b2mml:ParameterType>ProcessParameter</b2mml:ParameterType>
 				<b2mml:ParameterSubType>ST</b2mml:ParameterSubType>
 				<b2mml:Value>
-					<b2mml:ValueString>34</b2mml:ValueString>
+					<b2mml:ValueString>31</b2mml:ValueString>
 					<b2mml:DataInterpretation>Constant</b2mml:DataInterpretation>
 					<b2mml:DataType>double</b2mml:DataType>
 					<b2mml:UnitOfMeasure>Grad Celsius</b2mml:UnitOfMeasure>
