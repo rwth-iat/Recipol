@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Yuanchen Zhao
+Copyright (c) 2025 Alicia Eve
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Notice of Third-Party Dependencies:
+
+This project includes dependencies that are licensed under different terms. 
+The following dependencies have licenses that may impose additional restrictions:
+   
+1. **opcua-asyncio**: Licensed under the GNU Lesser General Public License 3.0 (LGPL-3.0)
+   - LGPL-3.0 URL: https://www.gnu.org/licenses/lgpl-3.0.en.html
+
+Please ensure that you comply with the terms of these licenses when using, 
+distributing, or modifying the code from these dependencies. 
+
+---
+
+Disclaimer:
+
+The list of third-party dependencies which impose additional restrictions
+provided  above may not be exhaustive. There may be other dependencies included
+in this project that have different licensing terms. The licensing of these 
+dependencies may also change over time. You are responsible for ensuring 
+compliance with the licenses of all third-party dependencies used in this 
+project. 
+<!-- Please refer to the respective license terms as indicated in the 
+project's documentation, `requirements.txt`, and `package.json` files for 
+a complete and up-to-date list of dependencies. For any legal concerns or 
+detailed license information, it is recommended to consult a legal expert. -->
