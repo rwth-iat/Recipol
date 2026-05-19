@@ -12,10 +12,6 @@ from qfluentwidgets import (
     Theme
 )
 
-# from Code.GUI.Home import HomePage
-# from Code.GUI.Logs import LogPage
-# from Code.GUI.MTPViewer import MTPViewer
-# from Code.GUI.SFCMonitor import SFCMonitor
 from frontend import HomePage, LogPage, MTPViewer, SFCMonitor
 
 # Test git

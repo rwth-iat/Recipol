@@ -18,7 +18,6 @@ from qfluentwidgets import (
     InfoBarPosition
 )
 
-#from Code.GUI.Workers import Worker
 from .Workers import Worker
 
 class HomePage(QWidget):

@@ -21,12 +21,14 @@ from .mtp_models import (
 from .mtp_units import getUnit
 
 # Path
-current_dir = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"
 
 ### static variables for testing
-TESTMTP1 = current_dir / "artifacts" / "MTPs" /  "2025-11-18-Zenon_HC10_MTP_V3.0.0.aml"
-TESTMTP2 = current_dir / "artifacts" / "MTPs" / "2025-11-10-HC20-Zenon v1.0.0.aml"
-TESTMTPS = [TESTMTP1, TESTMTP2]
+TESTMTP1 = ARTIFACTS_DIR / "2025-11-18-Zenon_HC10_MTP_V3.0.0.aml"
+TESTMTP2 = ARTIFACTS_DIR / "2025-11-10-HC20-Zenon v1.0.0.aml"
+TESTMTP3 = ARTIFACTS_DIR / "2026-05-18-HC30_Stirring_V8.aml"
+TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3]
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
 ### start main
@@ -34,7 +36,7 @@ def getMtps(input_files=None, logger=None) -> list[Pea]:
     mtps:list[Pea] = []
 
     if input_files is None:
-        input_files =  TESTMTPS     # å¦‚æžœæ²¡ä¼ å‚æ•°ï¼Œå¯ä»¥ä¿ç•™åŽŸæ¥çš„æµ‹è¯•æ•°æ®ä½œä¸ºé»˜è®¤å€¼
+        input_files =  TESTMTPS
 
     # parse mtp files
     for file in input_files:
@@ -1141,6 +1143,16 @@ def getMtps(input_files=None, logger=None) -> list[Pea]:
             elif child.tag == f"{NAMESPACE}InstanceHierarchy" and child.get("Name") == "Pictures":
                 # parse HMI Information for HC30
                 hminode = child.find(f".//*[@RefBaseSystemUnitPath='MTPHMISUCLib/Picture'][@Name='{mtp.name}']")
+                if hminode is None:
+                    picture_nodes = child.findall(f".//*[@RefBaseSystemUnitPath='MTPHMISUCLib/Picture']")
+                    hminode = next(
+                        (node for node in picture_nodes if node.find(f"{NAMESPACE}InternalElement") is not None),
+                        None,
+                    )
+                if hminode is None:
+                    if logger is not None:
+                        logger(f"No HMI picture found in {file}")
+                    continue
                 # create hmi
                 hmi = HMI()
                 # set type to RI because HC30 doesn't support services
@@ -1452,35 +1464,4 @@ def getMtps(input_files=None, logger=None) -> list[Pea]:
             if not (mtp.hasParameter(i.id) or mtp.hasProcedure(i.id) or mtp.hasService(i.id) or i.name == "PeaInforamtionLabel"):
                 mtp.sensacts.append(i)
         
-
-
-    # debugging only
-    # for m in mtps:
-    #     print(m.name)
-    #     for s in m.servs:
-    #         print(s.name, s.id)
-    #         for p in s.procs:
-    #             print("  ", p.name, p.id)
-    #             for pa in p.params:
-    #                 print("    ", pa.name, pa.id, pa.default, pa.unit)
-    #         print("\n")
-
-    ## debugging only
-    # print("Services: ")
-    # for s in mtp.servs:
-    #     print(s.name)
-    # print("\n", "Procedures: ")
-    # for p in mtp.procs:
-    #     print(p.name)
-    # print("\n", "Sensors and Actuators: ")
-    # for sa in mtp.sensacts:
-    #     if sa.paramElem["V"]["ID"] is not None:
-    #         print(sa.name, sa.paramElem["V"]["ID"])
-    #     elif sa.paramElem["VOut"]["ID"] is not None:
-    #         print(sa.name, sa.paramElem["VOut"]["ID"])
-    #     elif sa.paramElem["Pos"]["ID"] is not None:
-    #         print(sa.name, sa.paramElem["Pos"]["ID"])
-    #     elif sa.paramElem["Ctrl"]["ID"] is not None:
-    #         print(sa.name, sa.paramElem["Ctrl"]["ID"])
-
     return mtps
