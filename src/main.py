@@ -24,7 +24,7 @@ class MainWindow(FluentWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Recipol UI")
+        self.setWindowTitle("Recipol")
         self.resize(1150, 700)
         setTheme(Theme.DARK)
 

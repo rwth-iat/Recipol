@@ -43,7 +43,7 @@ class ControlRunner(QObject):
         import builtins
         import traceback
         # import Code.Recipol.control as control
-        from src.backend import control
+        from backend import control
 
         original_input = builtins.input
 
