@@ -1,6 +1,6 @@
 # Recipol
 
-Recipol is an open-source Process Orchestration Layer (POL) enabling the execution of standardized and formalized process descriptions (master recipes in BatchML, an XML-Schema according to ISA-88 - Batch Control) in modular plants using the Capability–Skill–Service (CSS) model and Module Type Package (MTP). 
+Recipol is an open-source Process Orchestration Layer (POL) enabling the execution of standardized and formalized process descriptions (master recipes in BatchML, an XML-Schema according to ISA-88 - Batch Control) in modular plants using the Capability, Skill and Service (CSS) model and Module Type Package (MTP). 
 Recipol was developed at the Chair of Information and Automation Systems (IAT), RWTH Aachen University based on:
 * _Winter, Michael; Eve, Alicia; Schmetz, Benedikt; Kleinert, Tobias (2025): A POL for Modular Plants using Capabilities in Master Recipes. In: 1st IFAC Workshop on Engineering and Architectures of Automation Systems (EAAS 2025), Padova, Italy._
 
