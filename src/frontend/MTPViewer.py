@@ -47,7 +47,7 @@ class MTPViewer(QWidget):
         # 3. 树形展示区域
         self.tree_widget = TreeWidget(self)
         # 设置表头
-        self.tree_widget.setHeaderLabels(["Hierarchy (Name)", "ID", "Type", "Default Value", "Low Limit", "High Limit", "Unit"])
+        self.tree_widget.setHeaderLabels(["Hierarchy (Name)", "GUID/UUID (Global/Universal Unique Identifier)", "Type", "Default Value", "Low Limit", "High Limit", "Unit"])
         self.tree_widget.setColumnWidth(0, 250)
         self.tree_widget.setColumnWidth(1, 280)
         self.tree_widget.setColumnWidth(2, 100)
