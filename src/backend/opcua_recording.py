@@ -32,6 +32,7 @@ _READABLE_ACCESS = {"1", "3"}
 _UNREADABLE_ACCESS = {"0", "2"}
 _CSV_DELIMITER = ";"
 _CSV_SCHEMA_VERSION = "2"
+_CSV_FLOAT_DECIMAL_PLACES = 3
 
 
 @dataclass
@@ -1224,6 +1225,8 @@ def _csv_value(value: Any) -> Any:
         return ""
     if isinstance(value, bool):
         return "true" if value else "false"
+    if isinstance(value, float):
+        return f"{value:.{_CSV_FLOAT_DECIMAL_PLACES}f}"
     if isinstance(value, bytes):
         return value.hex()
     return value

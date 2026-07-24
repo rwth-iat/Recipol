@@ -516,7 +516,7 @@ def test_csv_contains_metadata_wide_values_quality_and_replaces_existing(
         "ProcessValueOut", "Temperature", "V", "",
     ]
     assert history_rows[0] == ["timestamp_utc", "S001", "quality_issues"]
-    assert history_rows[1][1:] == ["42.5", ""]
+    assert history_rows[1][1:] == ["42.500", ""]
     raw_lines = output.read_text(encoding="utf-8").splitlines()
     assert raw_lines[0] == "[metadata]"
     assert "timestamp_utc;S001;quality_issues" in raw_lines
@@ -784,6 +784,20 @@ def test_data_value_quality_comes_from_opcua_status_code():
     assert quality == "BadSensorFailure"
     assert source_ts == datetime(2026, 7, 23, tzinfo=timezone.utc)
     assert server_ts == datetime(2026, 7, 23, 0, 0, 1, tzinfo=timezone.utc)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (103.19999694824219, "103.200"),
+        (23.205493927001953, "23.205"),
+        (23.549999237060547, "23.550"),
+        (0.0010000000474974513, "0.001"),
+        (24.0, "24.000"),
+    ],
+)
+def test_csv_value_formats_floats_with_three_decimal_places(value, expected):
+    assert recording._csv_value(value) == expected
 
 
 @pytest.mark.parametrize("quality", ["Good", "GoodClamped", "GoodLocalOverride"])
