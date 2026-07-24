@@ -68,6 +68,7 @@ class Instance:
                           'FwdCtrl': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'RevCtrl': {'Type': 'BOOL', 'ID': None, 'Default': None},
                           'V': {'Type': 'REAL', 'ID': None, 'Default': None},
+                          'Text': {'Type': 'STRING', 'ID': None, 'Default': None},
                           'VExt': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VOp': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VInt': {'Type': 'REAL', 'ID': None, 'Default': None},
@@ -79,6 +80,11 @@ class Instance:
                           'VUnit': {'Type': 'INT', 'ID': None, 'Default': None},
                           'VMin': {'Type': 'REAL', 'ID': None, 'Default': None},
                           'VMax': {'Type': 'REAL', 'ID': None, 'Default': None}}
+        # OPC UA access mode of the ExternalInterface referenced by each channel:
+        # 0=none, 1=read, 2=write, 3=read/write. Older callers can continue to
+        # consume Type/ID/Default unchanged.
+        for descriptor in self.paramElem.values():
+            descriptor["Access"] = None
 
     def __str__(self):
         descr = f"NAME: {self.name}, ID={self.id}"

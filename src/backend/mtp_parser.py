@@ -31,6 +31,48 @@ TESTMTP3 = ARTIFACTS_DIR / "2026-05-18-HC30_Stirring_V8.aml"
 TESTMTPS = [TESTMTP1, TESTMTP2, TESTMTP3]
 NAMESPACE = "{http://www.dke.de/CAEX}"
 
+def _value_or_default(node):
+    """Return an AML attribute's explicit value, falling back to its default."""
+    if node is None:
+        return None
+    value = node.findtext(f"{NAMESPACE}Value")
+    if value is not None:
+        return value
+    return node.findtext(f"{NAMESPACE}DefaultValue")
+
+
+def _parse_access(value):
+    """Normalize the OPC UA access mode while tolerating vendor extensions."""
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return value
+
+
+def _resolve_param_interfaces(inst_node, inst, interfaces_by_id):
+    """Resolve channel attributes to their OPC UA Identifier and Access mode."""
+    for attr_node in inst_node.findall(f"{NAMESPACE}Attribute"):
+        channel = attr_node.get("Name")
+        if channel not in inst.paramElem:
+            continue
+
+        interface_id = _value_or_default(attr_node)
+        interface = interfaces_by_id.get(interface_id)
+        if interface is None:
+            continue
+
+        identifier = interface.find(
+            f"{NAMESPACE}Attribute[@Name='Identifier']"
+        )
+        access = interface.find(f"{NAMESPACE}Attribute[@Name='Access']")
+        inst.paramElem[channel]["ID"] = _value_or_default(identifier)
+        inst.paramElem[channel]["Access"] = _parse_access(
+            _value_or_default(access)
+        )
+
+
 ### start main
 def getMtps(input_files=None, logger=None) -> list[Pea]:
     mtps:list[Pea] = []
@@ -56,6 +98,13 @@ def getMtps(input_files=None, logger=None) -> list[Pea]:
 
                 for gchild in child.iter(f"{NAMESPACE}InternalElement"):
                     if gchild.get("Name") == "CommunicationSet" or gchild.get("Name") == "Communication":
+                        interfaces_by_id = {
+                            interface.get("ID"): interface
+                            for interface in gchild.iter(
+                                f"{NAMESPACE}ExternalInterface"
+                            )
+                            if interface.get("ID")
+                        }
                         for node in gchild:
                             if node.get("Name") == "InstanceList" or node.get("Name") == "Instances":
                                 # parse instances
@@ -400,6 +449,13 @@ def getMtps(input_files=None, logger=None) -> list[Pea]:
                                             unitId = attrNode.findtext(f"{NAMESPACE}DefaultValue")
                                             inst.unitval = int(unitId)
                                             inst.addUnit(getUnit(int(unitId)))
+
+                                    # Resolve all modeled data channels uniformly.
+                                    # This also supplies StringView.Text and preserves
+                                    # the Access metadata of the linked OPC UA item.
+                                    _resolve_param_interfaces(
+                                        instNode, inst, interfaces_by_id
+                                    )
 
                                     # add instance to mtp
                                     mtp.addInstance(inst)

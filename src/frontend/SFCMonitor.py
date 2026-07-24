@@ -22,7 +22,17 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import CardWidget, ComboBox, FluentIcon, SubtitleLabel, TitleLabel, PrimaryPushButton, InfoBar, InfoBarPosition
+from qfluentwidgets import (
+    CardWidget,
+    ComboBox,
+    FluentIcon,
+    InfoBar,
+    InfoBarPosition,
+    PrimaryPushButton,
+    SubtitleLabel,
+    SwitchButton,
+    TitleLabel,
+)
 
 class ControlRunner(QObject):
     input_requested = pyqtSignal(str)
@@ -31,13 +41,14 @@ class ControlRunner(QObject):
     log_signal = pyqtSignal(str)
     exec_signal = pyqtSignal(str, str)
 
-    def __init__(self, mtp_files=None, recipe_files=None):
+    def __init__(self, mtp_files=None, recipe_files=None, recording_enabled=False):
         super().__init__()
         self._mutex = QMutex()
         self._wait = QWaitCondition()
         self._input_response = ""
         self._mtp_files = mtp_files or []
         self._recipe_files = recipe_files or []
+        self._recording_enabled = bool(recording_enabled)
 
     def run(self):
         import builtins
@@ -59,8 +70,15 @@ class ControlRunner(QObject):
 
         builtins.input = _input
         try:
-            control.run_from_files(mtp_files=self._mtp_files, recipe_files=self._recipe_files, logger=self._handle_log)
-        except Exception:
+            control.run_from_files(
+                mtp_files=self._mtp_files,
+                recipe_files=self._recipe_files,
+                logger=self._handle_log,
+                recording_enabled=self._recording_enabled,
+            )
+            self._handle_log("[EXEC] Recipe execution completed successfully.")
+        except Exception as exc:
+            self._handle_log(f"[EXEC] Recipe execution failed: {type(exc).__name__}: {exc}.")
             self.error.emit(traceback.format_exc())
         finally:
             builtins.input = original_input
@@ -221,6 +239,12 @@ class SFCMonitor(QWidget):
         self.execute_button.setEnabled(False)
         self.execute_button.clicked.connect(self._on_execute_recipe)
         self.selection_layout.addWidget(self.execute_button)
+        self.recording_switch = SwitchButton(self)
+        self.recording_switch.setObjectName("RecordingSwitch")
+        self.recording_switch.setOnText("Start Recording")
+        self.recording_switch.setOffText("Start Recording")
+        self.recording_switch.setChecked(False)
+        self.selection_layout.addWidget(self.recording_switch)
         self.selection_layout.addStretch(1)
         layout.addWidget(self.selection_card)
 
@@ -394,15 +418,23 @@ class SFCMonitor(QWidget):
             QMessageBox.information(self, "Execute Recipe", "Recipe execution is already running.")
             return
 
+        recording_enabled = self.recording_switch.isChecked()
         self.execute_button.setEnabled(False)
+        self.recording_switch.setEnabled(False)
         self._control_thread = QThread(self)
         mtp_files, recipe_files = self._get_selected_files()
         if mtp_files is None and recipe_files is None:
             QMessageBox.information(self, "Execute Recipe", "No selected files found from Home page. Please select files and run Inspect first.")
-            self.execute_button.setEnabled(True)
+            self._control_thread = None
+            self._sync_execute_button()
+            self.recording_switch.setEnabled(True)
             return
 
-        self._control_runner = ControlRunner(mtp_files=mtp_files or [], recipe_files=recipe_files or [])
+        self._control_runner = ControlRunner(
+            mtp_files=mtp_files or [],
+            recipe_files=recipe_files or [],
+            recording_enabled=recording_enabled,
+        )
         self._control_runner.moveToThread(self._control_thread)
         self._control_runner.log_signal.connect(self._append_log)
         self._control_runner.exec_signal.connect(self._on_exec_event)
@@ -415,13 +447,20 @@ class SFCMonitor(QWidget):
         self._control_runner.finished.connect(self._control_runner.deleteLater)
         self._control_thread.finished.connect(self._control_thread.deleteLater)
         self._control_thread.finished.connect(self._clear_control_runner)
-        self._control_thread.finished.connect(lambda: self.execute_button.setEnabled(True))
+        self._control_thread.finished.connect(self._restore_execution_controls)
 
         self._highlight_init()
         self._control_thread.start()
 
     def _sync_execute_button(self):
-        self.execute_button.setEnabled(self._home_has_aml())
+        execution_running = bool(
+            self._control_thread and self._control_thread.isRunning()
+        )
+        self.execute_button.setEnabled(not execution_running and self._home_has_aml())
+
+    def _restore_execution_controls(self):
+        self._sync_execute_button()
+        self.recording_switch.setEnabled(True)
 
     def _home_has_aml(self) -> bool:
         main_win = self.window()

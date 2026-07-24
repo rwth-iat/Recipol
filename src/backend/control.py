@@ -726,11 +726,46 @@ def _convert_element(elem, mtps, fallback_mtp, last_step_mtp):
         return (elem, mtp_mod)
 
 
-def run_from_files(mtp_files=None, recipe_files=None, logger=None):
+def run_from_files(mtp_files=None, recipe_files=None, logger=None, recording_enabled=False):
     global _log_cb
     _log_cb = logger
     procedure, mtps = build_execution_procedure(recipe_files=recipe_files, mtp_files=mtp_files)
-    main(procedure, mtps)
+
+    recorder = None
+    recording_start_error = None
+    recipe_status = "completed"
+    recipe_error = None
+
+    if recording_enabled:
+        try:
+            from .opcua_recording import OpcUaRecordingManager
+
+            recorder = OpcUaRecordingManager(
+                procedure=procedure,
+                recipe_files=recipe_files or [],
+                logger=_log,
+                sampling_interval_s=1.0,
+            )
+            recorder.start()
+        except Exception as exc:
+            recording_start_error = exc
+            _log(f"[HIST] Warning: {type(exc).__name__}: {exc}; recipe execution continues.")
+
+    try:
+        main(procedure, mtps)
+    except BaseException as exc:
+        recipe_status = "failed"
+        recipe_error = exc
+        raise
+    finally:
+        if recorder is not None:
+            try:
+                recorder.stop(
+                    recipe_status=recipe_status,
+                    error=recipe_error or recording_start_error,
+                )
+            except Exception as exc:
+                _log(f"[HIST] Warning: {type(exc).__name__}: {exc}; recipe execution continues.")
 ### main
 if __name__ == "__main__":
     run_from_files()
