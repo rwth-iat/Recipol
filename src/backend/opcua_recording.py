@@ -30,6 +30,8 @@ _MISSING = "Missing"
 _NO_COMMUNICATION = "BadNoCommunication"
 _READABLE_ACCESS = {"1", "3"}
 _UNREADABLE_ACCESS = {"0", "2"}
+_CSV_DELIMITER = ";"
+_CSV_SCHEMA_VERSION = "2"
 
 
 @dataclass
@@ -46,6 +48,9 @@ class SignalDescriptor:
     unit: str = ""
     access: str | None = None
     procedure_ids: set[str] = field(default_factory=set)
+    procedure_numbers: set[str] = field(default_factory=set)
+    step_ids: set[str] = field(default_factory=set)
+    signal_id: str = ""
 
     @property
     def key(self) -> tuple[str, str, str]:
@@ -66,7 +71,7 @@ class SignalDescriptor:
             self.channel,
             self.unit or "-",
         )
-        return "|".join(_column_part(part) for part in parts)
+        return "__".join(_column_part(part) for part in parts)
 
 
 @dataclass(frozen=True)
@@ -75,6 +80,20 @@ class CacheEntry:
     quality: str
     source_timestamp: datetime | None = None
     server_timestamp: datetime | None = None
+    quality_detail: str | None = None
+
+
+@dataclass(frozen=True)
+class ProcedureParameterRecord:
+    step_id: str
+    module_name: str
+    procedure_id: str
+    procedure_number: str
+    procedure_name: str
+    parameter_id: str
+    parameter_name: str
+    configured_value: Any
+    unit: str
 
 
 @dataclass(frozen=True)
@@ -167,6 +186,7 @@ class OpcUaRecordingManager:
         )
 
         self.signals: list[SignalDescriptor] = []
+        self.procedure_parameters: list[ProcedureParameterRecord] = []
         self.executable_step_count = 0
         self.started_at: datetime | None = None
         self.ended_at: datetime | None = None
@@ -193,6 +213,7 @@ class OpcUaRecordingManager:
         self._spool_writer: csv.writer | None = None
         self._spool_lock = threading.Lock()
         self._snapshot_count = 0
+        self._had_quality_issues = False
         self._thread_error: BaseException | None = None
         self._reconnect_interval_s = 5.0
         self._shutdown_timeout_s = 15.0
@@ -210,6 +231,7 @@ class OpcUaRecordingManager:
         )
 
         self.signals, self.executable_step_count = self._build_signal_catalog()
+        self.procedure_parameters = self._build_procedure_parameters()
         self._log(
             f"[HIST] Selected {len(self.signals)} unique signal(s) from "
             f"{self.executable_step_count} executable procedure step(s)."
@@ -327,31 +349,74 @@ class OpcUaRecordingManager:
         except RuntimeError:
             pass
 
+    def _iter_executable_steps(self) -> Iterable[tuple[str, dict[str, Any]]]:
+        position = 0
+        occurrences: dict[str, int] = {}
+        for step in self.procedure:
+            if not isinstance(step, dict):
+                continue
+            if step.get("mtp") is None or step.get("inst") is None:
+                continue
+            position += 1
+            base_step_id = _step_identifier(step, position)
+            occurrence = occurrences.get(base_step_id, 0) + 1
+            occurrences[base_step_id] = occurrence
+            step_id = base_step_id if occurrence == 1 else f"{base_step_id}#{occurrence}"
+            yield step_id, step
+
+    def _build_procedure_parameters(self) -> list[ProcedureParameterRecord]:
+        records: list[ProcedureParameterRecord] = []
+        for step_id, step in self._iter_executable_steps():
+            mtp = step["mtp"]
+            instance = step["inst"]
+            module_name = _module_name(mtp)
+            procedure_id = _procedure_id(instance)
+            procedure_number = _procedure_number(instance)
+            procedure_name = str(
+                getattr(instance, "name", "") or procedure_id
+            )
+
+            for configured in list(step.get("params") or []):
+                if not isinstance(configured, (list, tuple)) or len(configured) < 2:
+                    continue
+                parameter, value = configured[0], configured[1]
+                parameter_id = str(
+                    getattr(parameter, "id", "") or "unknown-parameter"
+                )
+                parameter_name = str(
+                    getattr(parameter, "name", "") or parameter_id
+                )
+                records.append(
+                    ProcedureParameterRecord(
+                        step_id=step_id,
+                        module_name=module_name,
+                        procedure_id=procedure_id,
+                        procedure_number=procedure_number,
+                        procedure_name=procedure_name,
+                        parameter_id=parameter_id,
+                        parameter_name=parameter_name,
+                        configured_value=value,
+                        unit=_configured_parameter_unit(step, parameter),
+                    )
+                )
+        return records
+
     def _build_signal_catalog(
         self,
     ) -> tuple[list[SignalDescriptor], int]:
         deduplicated: dict[tuple[str, str, str], SignalDescriptor] = {}
         step_count = 0
-        for step in self.procedure:
-            if not isinstance(step, dict):
-                continue
+        for step_id, step in self._iter_executable_steps():
             mtp = step.get("mtp")
             instance = step.get("inst")
-            if mtp is None or instance is None:
-                continue
             # Nested lists (parallel groups), transitions, init/end and unmapped
-            # steps do not satisfy the shape above and are deliberately excluded.
+            # steps are excluded by _iter_executable_steps().
             step_count += 1
             endpoint = str(getattr(mtp, "url", "") or "")
             namespace = str(getattr(mtp, "ns", "") or "")
-            module_name = str(getattr(mtp, "name", "") or Path(
-                str(getattr(mtp, "source_file", "") or "unknown-module")
-            ).stem)
-            procedure_id = str(
-                getattr(instance, "procId", None)
-                or getattr(instance, "id", None)
-                or getattr(instance, "name", "unknown-procedure")
-            )
+            module_name = _module_name(mtp)
+            procedure_id = _procedure_id(instance)
+            procedure_number = _procedure_number(instance)
 
             for parameter in list(getattr(instance, "params", None) or []):
                 signal_type = _normalise_parameter_type(parameter)
@@ -394,12 +459,14 @@ class OpcUaRecordingManager:
                     unit=str(getattr(parameter, "unit", "") or ""),
                     access=access,
                     procedure_ids={procedure_id},
+                    procedure_numbers={procedure_number} if procedure_number else set(),
+                    step_ids={step_id},
                 )
                 existing = deduplicated.get(descriptor.key)
                 if existing is None:
                     deduplicated[descriptor.key] = descriptor
                 else:
-                    existing.procedure_ids.add(procedure_id)
+                    _merge_signal_descriptors(existing, descriptor)
 
         signals = sorted(
             deduplicated.values(),
@@ -412,6 +479,8 @@ class OpcUaRecordingManager:
                 signal.signal_name,
             ),
         )
+        for index, signal in enumerate(signals, start=1):
+            signal.signal_id = f"S{index:03d}"
         return signals, step_count
 
     def _thread_main(self) -> None:
@@ -536,11 +605,14 @@ class OpcUaRecordingManager:
                 if result is None or _subscription_result_failed(result):
                     mapping_key = (group_key, _node_id_text(node))
                     self._node_to_signal.pop(mapping_key, None)
-                    self._update_cache(signal.key, CacheEntry(None, _MISSING))
                     detail = (
                         "missing subscription result"
                         if result is None
                         else _status_text(result)
+                    )
+                    self._update_cache(
+                        signal.key,
+                        CacheEntry(None, _MISSING, quality_detail=detail),
                     )
                     self._warn(
                         f"Module '{module_name}' node '{signal.node_address}' "
@@ -603,8 +675,15 @@ class OpcUaRecordingManager:
                 signal.key,
                 CacheEntry(value, quality, source_ts, server_ts),
             )
-        except Exception:
-            self._update_cache(signal.key, CacheEntry(None, _MISSING))
+        except Exception as exc:
+            self._update_cache(
+                signal.key,
+                CacheEntry(
+                    None,
+                    _MISSING,
+                    quality_detail=f"{type(exc).__name__}: {exc}",
+                ),
+            )
 
     async def _disconnect_group(self, group_key: tuple[str, str, str]) -> None:
         connection = self._connections.pop(group_key, None)
@@ -670,13 +749,21 @@ class OpcUaRecordingManager:
         with self._cache_lock:
             cache = dict(self._cache)
         row: list[Any] = [_iso(timestamp or _utc_now())]
+        quality_issues: list[str] = []
+        self._ensure_signal_ids()
         for signal in self.signals:
             entry = cache.get(signal.key, CacheEntry(None, _MISSING))
-            row.extend((_csv_value(entry.value), entry.quality))
+            row.append(_csv_value(entry.value))
+            issue = _quality_issue(signal.signal_id, entry)
+            if issue:
+                quality_issues.append(issue)
+        row.append(",".join(quality_issues))
         with self._spool_lock:
             if self._spool_writer is None or self._spool_file is None:
                 return
             self._spool_writer.writerow(row)
+            if quality_issues:
+                self._had_quality_issues = True
             self._spool_file.flush()
             self._snapshot_count += 1
 
@@ -704,6 +791,7 @@ class OpcUaRecordingManager:
                 )
 
     def _open_spool(self) -> None:
+        self._ensure_signal_ids()
         handle, name = tempfile.mkstemp(
             prefix=".lastRecord.",
             suffix=".rows.tmp",
@@ -716,13 +804,10 @@ class OpcUaRecordingManager:
             self._spool_file = self._spool_path.open(
                 "w", encoding="utf-8", newline=""
             )
-            self._spool_writer = csv.writer(self._spool_file)
-            header = ["timestamp_utc"]
-            for signal in self.signals:
-                header.extend(
-                    (f"{signal.column_name}.value", f"{signal.column_name}.quality")
-                )
-            self._spool_writer.writerow(header)
+            self._spool_writer = csv.writer(
+                self._spool_file, delimiter=_CSV_DELIMITER
+            )
+            self._spool_writer.writerow(self._history_header())
             self._spool_file.flush()
 
     def _close_spool(self, timeout_s: float | None = None) -> bool:
@@ -742,6 +827,55 @@ class OpcUaRecordingManager:
         finally:
             self._spool_lock.release()
 
+    def _ensure_signal_ids(self) -> None:
+        for index, signal in enumerate(self.signals, start=1):
+            signal.signal_id = f"S{index:03d}"
+
+    def _history_header(self) -> list[str]:
+        self._ensure_signal_ids()
+        return [
+            "timestamp_utc",
+            *(signal.signal_id for signal in self.signals),
+            "quality_issues",
+        ]
+
+    def _procedure_parameter_rows(self) -> list[tuple[Any, ...]]:
+        return [
+            (
+                record.step_id,
+                record.module_name,
+                record.procedure_id,
+                record.procedure_number,
+                record.procedure_name,
+                record.parameter_id,
+                record.parameter_name,
+                _csv_value(record.configured_value),
+                record.unit,
+            )
+            for record in self.procedure_parameters
+        ]
+
+    def _signal_catalog_rows(self) -> list[tuple[str, ...]]:
+        self._ensure_signal_ids()
+        return [
+            (
+                signal.signal_id,
+                signal.module_name,
+                ",".join(sorted(signal.step_ids)),
+                ",".join(sorted(signal.procedure_ids)),
+                ",".join(sorted(signal.procedure_numbers)),
+                signal.signal_type,
+                signal.signal_name,
+                signal.channel,
+                signal.unit,
+                signal.endpoint,
+                signal.namespace,
+                signal.node_address,
+                signal.access or "",
+            )
+            for signal in self.signals
+        ]
+
     def _finalize_csv(
         self,
         recipe_status: str,
@@ -759,15 +893,57 @@ class OpcUaRecordingManager:
         temp_path = Path(temp_name)
         try:
             with temp_path.open("w", encoding="utf-8", newline="") as target:
-                writer = csv.writer(target)
+                writer = csv.writer(target, delimiter=_CSV_DELIMITER)
+                writer.writerow(("[metadata]",))
+                writer.writerow(("key", "value"))
                 for key, value in metadata:
                     writer.writerow((key, value))
                 writer.writerow(())
+
+                writer.writerow(("[procedure_parameters]",))
+                writer.writerow(
+                    (
+                        "step_id",
+                        "module",
+                        "procedure_id",
+                        "procedure_number",
+                        "procedure_name",
+                        "parameter_id",
+                        "parameter_name",
+                        "configured_value",
+                        "unit",
+                    )
+                )
+                writer.writerows(self._procedure_parameter_rows())
+                writer.writerow(())
+
+                writer.writerow(("[signals]",))
+                writer.writerow(
+                    (
+                        "signal_id",
+                        "module",
+                        "step_ids",
+                        "procedure_ids",
+                        "procedure_numbers",
+                        "signal_type",
+                        "signal_name",
+                        "channel",
+                        "unit",
+                        "endpoint",
+                        "namespace",
+                        "node_id",
+                        "access",
+                    )
+                )
+                writer.writerows(self._signal_catalog_rows())
+                writer.writerow(())
+
+                writer.writerow(("[history]",))
                 if self._spool_path is not None and self._spool_path.exists():
                     with self._spool_path.open("r", encoding="utf-8", newline="") as source:
                         shutil.copyfileobj(source, target)
                 else:
-                    writer.writerow(("timestamp_utc",))
+                    writer.writerow(self._history_header())
                 target.flush()
                 os.fsync(target.fileno())
             os.replace(temp_path, self.output_path)
@@ -784,8 +960,13 @@ class OpcUaRecordingManager:
         error: BaseException | str | None,
     ) -> list[tuple[str, str]]:
         recipe_meta = _recipe_metadata(self.recipe_files)
-        modules = sorted({signal.module_name for signal in self.signals})
+        module_names = {signal.module_name for signal in self.signals}
+        module_names.update(
+            _module_name(step["mtp"]) for _step_id, step in self._iter_executable_steps()
+        )
+        modules = sorted(module_names)
         rows = [
+            ("csv_schema_version", _CSV_SCHEMA_VERSION),
             ("recipe_id", recipe_meta["recipe_id"]),
             ("recipe_version", recipe_meta["recipe_version"]),
             ("product_id", recipe_meta["product_id"]),
@@ -817,6 +998,7 @@ class OpcUaRecordingManager:
             str(recipe_status).lower() != "completed"
             or error is not None
             or self._warnings
+            or self._had_quality_issues
             or self._unavailable_groups
         ):
             return "partial"
@@ -869,6 +1051,97 @@ def _subscription_result_failed(result: Any) -> bool:
         return not bool(is_good())
     except Exception:
         return True
+
+
+_SIGNAL_METADATA_FIELDS = (
+    "module_name",
+    "signal_type",
+    "signal_name",
+    "channel",
+    "unit",
+    "access",
+)
+
+
+def _signal_metadata_key(signal: SignalDescriptor) -> tuple[str, ...]:
+    return tuple(
+        str(getattr(signal, attribute) or "")
+        for attribute in _SIGNAL_METADATA_FIELDS
+    )
+
+
+def _merge_signal_descriptors(
+    existing: SignalDescriptor, candidate: SignalDescriptor
+) -> None:
+    if _signal_metadata_key(candidate) < _signal_metadata_key(existing):
+        for attribute in _SIGNAL_METADATA_FIELDS:
+            setattr(existing, attribute, getattr(candidate, attribute))
+    existing.procedure_ids.update(candidate.procedure_ids)
+    existing.procedure_numbers.update(candidate.procedure_numbers)
+    existing.step_ids.update(candidate.step_ids)
+
+
+def _step_identifier(step: dict[str, Any], position: int) -> str:
+    bml = step.get("bml")
+    raw = ""
+    for attribute in ("getId", "getName"):
+        candidate = getattr(bml, attribute, None)
+        try:
+            value = candidate() if callable(candidate) else candidate
+        except Exception:
+            value = None
+        if value not in (None, ""):
+            raw = str(value).strip()
+            break
+    if not raw:
+        raw = str(getattr(bml, "id", "") or "").strip()
+    prefix = raw.split(":", 1)[0].strip()
+    return prefix or f"{position:03d}"
+
+
+def _module_name(mtp: Any) -> str:
+    return str(
+        getattr(mtp, "name", "")
+        or Path(str(getattr(mtp, "source_file", "") or "unknown-module")).stem
+    )
+
+
+def _procedure_id(instance: Any) -> str:
+    return str(
+        getattr(instance, "id", None)
+        or getattr(instance, "name", None)
+        or getattr(instance, "procId", "unknown-procedure")
+    )
+
+
+def _procedure_number(instance: Any) -> str:
+    value = getattr(instance, "procId", None)
+    return "" if value is None else str(value)
+
+
+def _configured_parameter_unit(step: dict[str, Any], parameter: Any) -> str:
+    parameter_id = str(getattr(parameter, "id", "") or "")
+    bml = step.get("bml")
+    get_parameters = getattr(bml, "getParameter", None)
+    try:
+        recipe_parameters = (
+            list(get_parameters() or [])
+            if callable(get_parameters)
+            else list(getattr(bml, "params", None) or [])
+        )
+    except Exception:
+        recipe_parameters = list(getattr(bml, "params", None) or [])
+
+    for recipe_parameter in recipe_parameters:
+        recipe_parameter_id = str(
+            getattr(recipe_parameter, "id", "") or ""
+        ).rsplit(":", 1)[-1]
+        if recipe_parameter_id != parameter_id:
+            continue
+        unit = str(getattr(recipe_parameter, "unit", "") or "")
+        if unit:
+            return unit
+    return str(getattr(parameter, "unit", "") or "")
 
 
 def _normalise_parameter_type(parameter: Any) -> str:
@@ -931,7 +1204,19 @@ def _node_id_text(node: Any) -> str:
 
 def _column_part(value: Any) -> str:
     text = str(value).strip()
-    return re.sub(r"[\r\n|]+", "_", text) or "-"
+    return re.sub(r"[\r\n;|]+", "_", text) or "-"
+
+
+def _quality_issue(signal_id: str, entry: CacheEntry) -> str:
+    quality = str(entry.quality or _MISSING).strip() or _MISSING
+    if quality.lower().startswith("good"):
+        return ""
+    detail = re.sub(
+        r"[\s,=()]+", "_", str(entry.quality_detail or "").strip()
+    ).strip("_")
+    if detail and detail.lower() != quality.lower():
+        return f"{signal_id}={quality}({detail})"
+    return f"{signal_id}={quality}"
 
 
 def _csv_value(value: Any) -> Any:
@@ -1014,6 +1299,7 @@ def _local_name(tag: str) -> str:
 __all__ = [
     "CacheEntry",
     "OpcUaRecordingManager",
+    "ProcedureParameterRecord",
     "RecordingResult",
     "SignalDescriptor",
 ]
