@@ -327,7 +327,62 @@ class Bml:
         return None
 
 ### functions
+def _parameter_id(node, context: str) -> str:
+    param_id = node.findtext(f"{NAMESPACE}ID")
+    if param_id is None or not param_id.strip():
+        raise ValueError(f"{context}: parameter ID is missing or empty.")
+    return param_id
+
+
+def _read_parameter_assignment(node, context: str) -> dict[str, str] | None:
+    """Read one scalar assignment; absence of Value denotes a reference."""
+    values = node.findall(f"{NAMESPACE}Value")
+    if not values:
+        return None
+    if len(values) != 1:
+        raise ValueError(f"{context}: exactly one Value is supported per parameter.")
+
+    assignment = {}
+    for field in ("ValueString", "DataType", "UnitOfMeasure", "DataInterpretation"):
+        fields = values[0].findall(f"{NAMESPACE}{field}")
+        if len(fields) != 1:
+            raise ValueError(f"{context}: Value must contain exactly one {field}.")
+        text = fields[0].text or ""
+        # An empty unit is meaningful for dimensionless parameters.
+        if field != "UnitOfMeasure" and not text.strip():
+            raise ValueError(f"{context}: {field} must not be empty.")
+        assignment[field] = text
+    return assignment
+
+
+def _assigned_parameter(param_id: str, assignment: dict[str, str]) -> Parameter:
+    return Parameter(
+        id=param_id,
+        value=assignment["ValueString"],
+        dtype=assignment["DataType"],
+        unit=assignment["UnitOfMeasure"],
+    )
+
+
 def parseMasterRecipe(bml:Bml, node):
+    recipe_id = node.findtext(f"{NAMESPACE}ID")
+    # Formula definitions belong to this MasterRecipe. Local assignments must
+    # never enter this lookup, or one step can inherit another step's value.
+    formula_assignments = {}
+    for formula in node.findall(f"{NAMESPACE}Formula"):
+        for param_node in formula.findall(f"{NAMESPACE}Parameter"):
+            context = f"MasterRecipe {recipe_id!r}, Formula"
+            param_id = _parameter_id(param_node, context)
+            context += f", parameter {param_id!r}"
+            if param_id in formula_assignments:
+                raise ValueError(f"{context}: duplicate parameter ID in Formula.")
+            assignment = _read_parameter_assignment(param_node, context)
+            formula_assignments[param_id] = assignment
+            bml.addParameter(
+                _assigned_parameter(param_id, assignment)
+                if assignment is not None else Parameter(id=param_id)
+            )
+
     for child in node:      # node为<b2mml:BatchInformation>, child 为子节点
         if child.tag == f"{NAMESPACE}EquipmentRequirement":
             # create requirement object
@@ -342,21 +397,6 @@ def parseMasterRecipe(bml:Bml, node):
 
             # add requirement to bml's requirements
             bml.addRequirement(req)
-
-        elif child.tag == f"{NAMESPACE}Formula":
-            for gchild in child:
-                if gchild.tag == f"{NAMESPACE}Parameter":
-                    # create parameter object
-                    param = Parameter()
-
-                    # fetch information about parameter
-                    param.nameParameter(gchild.findtext(f"{NAMESPACE}ID"))
-                    param.addValue(gchild.find(f"{NAMESPACE}Value").findtext(f"{NAMESPACE}ValueString"))
-                    param.addDataType(gchild.find(f"{NAMESPACE}Value").findtext(f"{NAMESPACE}DataType"))
-                    param.addUnit(gchild.find(f"{NAMESPACE}Value").findtext(f"{NAMESPACE}UnitOfMeasure"))
-
-                    # add parameter to bml's parameters
-                    bml.addParameter(param)
 
         elif child.tag == f"{NAMESPACE}ProcedureLogic":
             for gchild in child:
@@ -425,6 +465,7 @@ def parseMasterRecipe(bml:Bml, node):
                 # set as initial element
                 thisElem.setInit()
             else:
+                local_parameter_ids = set()
                 for gchild in child:        # child为非init的<b2mml:RecipeElement>
                     if gchild.tag == f"{NAMESPACE}ActualEquipmentID":
                         resId = gchild.text         # Resource ID，如HC20Instance
@@ -456,25 +497,33 @@ def parseMasterRecipe(bml:Bml, node):
                         # add the requirement to the element
                         thisElem.addRequirement(req)
                     elif gchild.tag == f"{NAMESPACE}Parameter":
-                        paramId = gchild.findtext(f"{NAMESPACE}ID")
-                        param = bml.getParameter(paramId)
-
-                        # A parameter that the Formula does not declare is read
-                        # from the RecipeElement itself (its Value child).
-                        if param is None:
-                            # parameter doesn't exist yet, create new one
-                            param = Parameter(id=paramId)
-                            value = gchild.find(f"{NAMESPACE}Value")
-                            if value is not None:
-                                param.addDataType(value.findtext(f"{NAMESPACE}DataType"))
-                                param.addUnit(value.findtext(f"{NAMESPACE}UnitOfMeasure"))
-                                param.addValue(value.findtext(f"{NAMESPACE}ValueString"))
-
-                            # add param to bml
-                            bml.addParameter(param)
-
-                        # add param to element
-                        thisElem.addParameter(param)
+                        context = (
+                            f"MasterRecipe {recipe_id!r}, RecipeElement {thisElem.id!r}"
+                        )
+                        param_id = _parameter_id(gchild, context)
+                        context += f", parameter {param_id!r}"
+                        if param_id in local_parameter_ids:
+                            raise ValueError(f"{context}: duplicate parameter ID in RecipeElement.")
+                        local_parameter_ids.add(param_id)
+                        local = _read_parameter_assignment(gchild, context)
+                        central = formula_assignments.get(param_id)
+                        if local is not None and central is not None:
+                            conflicts = [
+                                f"{field}: Formula={central[field]!r}, "
+                                f"RecipeElement={local[field]!r}"
+                                for field in central if central[field] != local[field]
+                            ]
+                            if conflicts:
+                                raise ValueError(
+                                    f"{context}: conflicting parameter assignments "
+                                    f"({'; '.join(conflicts)})."
+                                )
+                        assignment = local if local is not None else central
+                        if assignment is None:
+                            raise ValueError(
+                                f"{context}: no Value assignment in Formula or RecipeElement."
+                            )
+                        thisElem.addParameter(_assigned_parameter(param_id, assignment))
 
 def parseResource(bml:Bml, node):       # 这个函数的作用是填好Bml对象的self.res:list[Resource]，每个Resource包含ID（如HC10Instance）和所能提供的skills(即Procedures)
     if node.findtext(f"{NAMESPACE}EquipmentElementType") == "Other":
