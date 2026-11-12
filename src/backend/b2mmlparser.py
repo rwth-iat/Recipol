@@ -459,13 +459,16 @@ def parseMasterRecipe(bml:Bml, node):
                         paramId = gchild.findtext(f"{NAMESPACE}ID")
                         param = bml.getParameter(paramId)
 
-                        #这个if里add的内容应该是错的，因为此处的<b2mml:Parameter>节点下不包含这些子节点，但这几行不会执行，因为所有parameter已经在bml的parameter列表里了
+                        # A parameter that the Formula does not declare is read
+                        # from the RecipeElement itself (its Value child).
                         if param is None:
-                            # parameter doesn't exist qet, create new one
+                            # parameter doesn't exist yet, create new one
                             param = Parameter(id=paramId)
-                            param.addDataType(gchild.find(f"{NAMESPACE}Value".findtext(f"{NAMESPACE}DataType")))
-                            param.addUnit(gchild.find(f"{NAMESPACE}Value".findtext(f"{NAMESPACE}UnitOfMeasure")))
-                            param.addValue(gchild.find(f"{NAMESPACE}Value".findtext(f"{NAMESPACE}ValueString")))
+                            value = gchild.find(f"{NAMESPACE}Value")
+                            if value is not None:
+                                param.addDataType(value.findtext(f"{NAMESPACE}DataType"))
+                                param.addUnit(value.findtext(f"{NAMESPACE}UnitOfMeasure"))
+                                param.addValue(value.findtext(f"{NAMESPACE}ValueString"))
 
                             # add param to bml
                             bml.addParameter(param)
