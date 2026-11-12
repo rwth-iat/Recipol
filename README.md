@@ -145,10 +145,37 @@ Execution requires network access to the OPC UA servers referenced in the select
 
 
 
+## Recipe Parameter Assignments
+
+A parameter used by a `RecipeElement` can receive its value centrally in the
+`MasterRecipe/Formula` or locally in that `RecipeElement`. The complete parameter
+ID, including any prefix, associates a local reference with its Formula entry.
+
+| Formula assignment | Local assignment | Result |
+| --- | --- | --- |
+| Present | Absent | Use the Formula assignment. |
+| Absent | Present | Use the local assignment for this RecipeElement only. |
+| Present | Identical | Accept the matching assignments. |
+| Present | Different | Reject the recipe with the recipe, element, parameter ID and conflicting fields. |
+| Absent | Absent | Reject an unresolved parameter reference. |
+
+Each assignment must contain one `Value` with one `ValueString`, `DataType`,
+`UnitOfMeasure` and `DataInterpretation`. An empty unit is allowed for dimensionless
+parameters; the other fields must not be empty. When both sources assign a value,
+these four fields are compared as exact text: numeric spellings and different
+units are not automatically converted. For example, `15` and `015` are treated as
+different assignments. This check does not add expression evaluation or validate
+values against the MTP data type or limits.
+
+The same parameter ID may have different local values in different RecipeElements
+when there is no central assignment. IDs must be unique within the Formula and
+within each RecipeElement. Assignment errors are raised during parsing, before
+recipe execution starts.
+
 ## Troubleshooting
 - **Schema validation fails**: Confirm `Schemas/AllSchemas.xsd` matches the B2MML/BatchML version of the recipe to be executed. Update the schema bundle if needed.
 - **OPC UA writes rejected**: Verify the namespace index retrieved by `getNamespaceId` matches the server configuration; adjust `Pea.ns` or hardcode `nsid` if your server uses a dynamic namespace order.
-- **Missing parameter IDs**: Ensure the parameter IDs in your recipe align with those exposed by the MTP procedure; the orchestrator enforces unit and range checks before execution.
+- **Missing parameter IDs**: Ensure the parameter IDs in your recipe align with those exposed by the MTP procedure. Values and units must be compatible with that procedure; the current execution path does not convert units or validate MTP limits.
 ## Current Status
 
 Recipol is a research prototype. It demonstrates how standardized recipes according to ISA-88 can be interpreted and executed on modular plant using MTP and the CSS Model.
